@@ -21,12 +21,10 @@
 - Gamification system to incentivize quick responses
 - Real-time dashboard for visibility and analytics
 
-### Measurable Impact
-- **Time to Fill:** Reduced from 45 minutes to 4 minutes
-- **Fill Rate:** Increased from 60% to 95%
-- **Employee Response Time:** Median < 2 minutes
-- **Feature Adoption:** 80% of employees engage with gamification
-- **User Retention:** 60%+ day-7 retention
+- **Time to Fill:** Reduced from 45 minutes to few minutes
+- **Fill Rate:** Increased from 60% to 80%+
+- **Employee Response Time:** < 10 minutes
+- **Feature Adoption:** Employees engage with gamification
 
 ---
 
