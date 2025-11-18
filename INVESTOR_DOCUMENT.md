@@ -22,7 +22,7 @@
 - Real-time dashboard for visibility and analytics
 
 - **Time to Fill:** Reduced from 45 minutes to few minutes
-- **Fill Rate:** Increased from 60% to 80%+
+- **Fill Rate:** Increased from 35% to 80%+
 - **Employee Response Time:** < 10 minutes
 - **Feature Adoption:** Employees engage with gamification
 
