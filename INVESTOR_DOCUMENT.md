@@ -5,7 +5,7 @@
 **Shift Express** is a production-ready SaaS B2B platform for intelligent shift management with employee gamification. The platform solves a critical pain point in the temporary workforce industry: filling last-minute shifts efficiently.
 
 ### Business Snapshot
-- **Listing Price:** $25,000 (acquire.com)
+- **Listing Price:** $5,000 (acquire.com)
 - **Target Market:** Hospitality, Retail, Logistics, Healthcare
 - **Revenue Model:** Freemium + Subscription (Free, Starter $49/mo, Pro $149/mo, Enterprise Custom)
 - **Development Status:** MVP Complete (v2.0.0), Production-Ready
@@ -1075,7 +1075,7 @@ Assuming acquisition at $:
 
 ### Investment Analysis
 
-**Acquisition Cost:** $25,000
+**Acquisition Cost:** $5,000
 
 **Payback Period (Revenue):**
 
@@ -1208,7 +1208,7 @@ Assuming acquisition at $:
 **Shift Express** is a **production-ready, well-architected SaaS platform** solving a real pain point in the temporary workforce industry. The codebase is professionally maintained with modern technology, comprehensive documentation, and clear business model.
 
 ### Investment Summary
-- **Acquisition Price:** $25,000
+- **Acquisition Price:** $5,000
 - **Estimated Payback:** 1-16 months (depends on customer acquisition)
 - **Growth Potential:** $20K-450K+ annual revenue (Year 1)
 - **Market Opportunity:** Massive TAM in hospitality/retail/logistics
