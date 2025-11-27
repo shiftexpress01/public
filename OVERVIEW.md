@@ -1,27 +1,27 @@
-# 🏗️ Architecture - Shift Express
+# Architecture - Shift Express
 
 **Version**: 2.0.0
-**Dernière mise à jour**: 2025-11-12
+**Last updated**: 2025-11-12
 
 ---
 
-## 📋 Table des Matières
+## Table of Contents
 
-- [Vue d'ensemble](#vue-densemble)
-- [Architecture Système](#architecture-système)
-- [Architecture Base de Données](#architecture-base-de-données)
-- [Flux de Données](#flux-de-données)
-- [Sécurité Multi-Tenant](#sécurité-multi-tenant)
-- [Déploiement](#déploiement)
-- [Scalabilité](#scalabilité)
+- [Overview](#overview)
+- [System Architecture](#system-architecture)
+- [Database Architecture](#database-architecture)
+- [Data Flows](#data-flows)
+- [Multi-Tenant Security](#multi-tenant-security)
+- [Deployment](#deployment)
+- [Scalability](#scalability)
 
 ---
 
-## 🌐 Vue d'ensemble
+## Overview
 
-Shift Express est une **plateforme SaaS B2B** pour la gestion de shifts temporaires avec gamification employé.
+Shift Express is a **B2B SaaS platform** for temporary shift management with employee gamification.
 
-### Stack Technique
+### Tech Stack
 
 ```mermaid
 graph TB
@@ -62,86 +62,86 @@ graph TB
     style EAS fill:#000020
 ```
 
-### Versions et Dépendances Clés
+### Key Versions and Dependencies
 
-#### 📱 Mobile App (`apps/mobile`)
+#### Mobile App (`apps/mobile`)
 
-| Librairie | Version | Usage |
-|-----------|---------|-------|
-| **React** | 19.1.0 | ⚠️ **React 19** (Compatible Expo 54+) |
-| **React Native** | 0.81.4 | Framework mobile |
-| **Expo** | 54.0.13 | Plateforme de développement |
-| **Expo Router** | 6.0.12 | Navigation file-based |
-| **TypeScript** | 5.3.3 | Typage statique |
+| Library | Version | Usage |
+|---------|---------|-------|
+| **React** | 19.1.0 | **React 19** (Compatible Expo 54+) |
+| **React Native** | 0.81.4 | Mobile framework |
+| **Expo** | 54.0.13 | Development platform |
+| **Expo Router** | 6.0.12 | File-based navigation |
+| **TypeScript** | 5.3.3 | Static typing |
 | **Zustand** | 4.4.7 | State management |
 | **TanStack Query** | 5.17.9 | Server state & cache |
 | **Supabase JS** | 2.39.0 | Backend client |
-| **i18next** | 25.5.3 | Internationalisation (FR/EN) |
+| **i18next** | 25.5.3 | Internationalization (FR/EN) |
 | **Sentry** | 7.2.0 | Error tracking |
-| **Lucide Icons** | 0.544.0 | Icônes React Native |
-| **Confetti Cannon** | 1.5.2 | Animations gamification |
-| **Flash List** | 2.2.0 | Listes performantes |
-| **date-fns** | 3.0.6 | Manipulation dates |
+| **Lucide Icons** | 0.544.0 | React Native icons |
+| **Confetti Cannon** | 1.5.2 | Gamification animations |
+| **Flash List** | 2.2.0 | High-performance lists |
+| **date-fns** | 3.0.6 | Date manipulation |
 
-**Note importante:** L'app mobile utilise **React 19** (au lieu de React 18), ce qui est compatible avec Expo 54+. Cette version apporte des améliorations de performance et prépare le projet pour le futur.
+**Important note:** The mobile app uses **React 19** (instead of React 18), which is compatible with Expo 54+. This version brings performance improvements and future-proofs the project.
 
-#### 🌐 Web App (`apps/web`)
+#### Web App (`apps/web`)
 
-| Librairie | Version | Usage |
-|-----------|---------|-------|
+| Library | Version | Usage |
+|---------|---------|-------|
 | **React** | 18.3.1 | UI library (stable) |
-| **React DOM** | 18.3.1 | React pour le web |
-| **Vite** | 5.0.11 | Build tool ultra-rapide |
-| **TypeScript** | 5.3.3 | Typage statique |
+| **React DOM** | 18.3.1 | React for web |
+| **Vite** | 5.0.11 | Ultra-fast build tool |
+| **TypeScript** | 5.3.3 | Static typing |
 | **React Router** | 6.21.1 | Routing |
 | **Zustand** | 4.4.7 | State management |
 | **TanStack Query** | 5.17.9 | Server state & cache |
-| **TanStack Table** | 8.11.2 | Tables complexes |
+| **TanStack Table** | 8.11.2 | Complex tables |
 | **Supabase JS** | 2.39.0 | Backend client |
-| **i18next** | 25.5.3 | Internationalisation (FR/EN) |
-| **Stripe JS** | 2.4.0 | Paiements |
+| **i18next** | 25.5.3 | Internationalization (FR/EN) |
+| **Stripe JS** | 2.4.0 | Payments |
 | **Framer Motion** | 12.23.24 | Animations |
-| **Recharts** | 2.15.4 | Graphiques & analytics |
-| **React Hook Form** | 7.63.0 | Formulaires optimisés |
-| **Zod** | 3.25.76 | Validation schémas |
-| **Tailwind CSS** | 3.4.0 | Styling utility-first |
-| **Lucide React** | 0.303.0 | Icônes React |
+| **Recharts** | 2.15.4 | Charts & analytics |
+| **React Hook Form** | 7.63.0 | Optimized forms |
+| **Zod** | 3.25.76 | Schema validation |
+| **Tailwind CSS** | 3.4.0 | Utility-first styling |
+| **Lucide React** | 0.303.0 | React icons |
 | **html2canvas** | 1.4.1 | Screenshots & exports |
-| **jsPDF** | 3.0.3 | Génération PDF |
-| **XLSX** | 0.18.5 | Export Excel |
+| **jsPDF** | 3.0.3 | PDF generation |
+| **XLSX** | 0.18.5 | Excel export |
 | **Sentry** | 10.24.0 | Error tracking |
 | **Sonner** | 1.3.1 | Toast notifications |
 | **next-themes** | 0.4.6 | Dark mode |
 
-#### 🖥️ API Server (`apps/api`)
+#### API Server (`apps/api`)
 
-| Librairie | Version | Usage |
-|-----------|---------|-------|
+| Library | Version | Usage |
+|---------|---------|-------|
 | **Express** | 4.18.2 | Backend framework |
-| **TypeScript** | 5.3.3 | Typage statique |
+| **TypeScript** | 5.3.3 | Static typing |
 | **Supabase JS** | 2.39.0 | Database & auth client |
 | **Redis (ioredis)** | 5.3.2 | Caching & rate limiting |
 | **Stripe** | 14.10.0 | Webhooks & payments |
-| **Winston** | 3.11.0 | Logging structuré |
+| **Winston** | 3.11.0 | Structured logging |
 | **Logtail** | 0.4.3 | Log aggregation |
 | **Helmet** | 7.1.0 | Security headers |
 | **CORS** | 2.8.5 | Cross-origin handling |
-| **Zod** | 3.22.4 | Validation API |
+| **Zod** | 3.22.4 | API validation |
 | **express-rate-limit** | 7.1.5 | Rate limiting |
 | **rate-limit-redis** | 4.2.0 | Rate limit storage |
 
-#### 🗄️ Database & Backend
+#### Database & Backend
 
 | Service | Version | Usage |
 |---------|---------|-------|
-| **PostgreSQL** | 15.x | Base de données principale |
+| **PostgreSQL** | 15.x | Main database |
 | **Supabase** | Latest | BaaS (Auth, Storage, RLS) |
-| **Upstash Redis** | Latest | Cache distribué |
+| **Upstash Redis** | Latest | Distributed cache |
 | **Supabase Edge Functions** | Deno runtime | Webhooks & background jobs |
 
 ---
 
-## 🏢 Architecture Système
+## System Architecture
 
 ### Monorepo Structure
 
@@ -164,9 +164,9 @@ shift-express/
 
 ---
 
-## 🗄️ Architecture Base de Données
+## Database Architecture
 
-### Schéma ERD Complet
+### Complete ERD Schema
 
 ```mermaid
 erDiagram
@@ -288,9 +288,9 @@ erDiagram
 
 ---
 
-## 🔄 Flux de Données
+## Data Flows
 
-### 1. Authentification Flow
+### 1. Authentication Flow
 
 ```mermaid
 sequenceDiagram
@@ -309,7 +309,7 @@ sequenceDiagram
     API-->>Mobile: {user, token, role}
     Mobile->>Mobile: Store token in AsyncStorage
 
-    Note over Mobile,Database: JWT expires après 1 heure
+    Note over Mobile,Database: JWT expires after 1 hour
 ```
 
 ---
@@ -368,12 +368,12 @@ sequenceDiagram
 
     API->>Redis: Invalidate cache<br/>del("challenges-overview:user")
     API-->>Mobile: {success, points: 150, new_total: 1350}
-    Mobile-->>Employee: 🎉 Celebration modal<br/>+150 pts!
+    Mobile-->>Employee: Celebration modal<br/>+150 pts!
 ```
 
 ---
 
-## 🔐 Sécurité Multi-Tenant
+## Multi-Tenant Security
 
 ### Row Level Security (RLS) Architecture
 
@@ -427,9 +427,9 @@ graph TB
 graph LR
     subgraph "Company A - Restaurant Chain"
         CA[Company A<br/>Pro Plan]
-        EA1[Paris 8ème<br/>Champs-Élysées]
+        EA1[Paris 8th<br/>Champs-Elysees]
         EA2[Lyon Part-Dieu]
-        EA3[Marseille Vieux-Port]
+        EA3[Marseille Old Port]
 
         CA --> EA1
         CA --> EA2
@@ -446,8 +446,8 @@ graph LR
 
     subgraph "Company B - Hotel Group"
         CB[Company B<br/>Ultra Plan]
-        EB1[Hôtel Nice]
-        EB2[Hôtel Cannes]
+        EB1[Nice Hotel]
+        EB2[Cannes Hotel]
 
         CB --> EB1
         CB --> EB2
@@ -473,13 +473,13 @@ graph LR
 
 ---
 
-## 🚀 Déploiement
+## Deployment
 
 ### Infrastructure Overview
 
 ```mermaid
 graph TB
-    subgraph "Code Source"
+    subgraph "Source Code"
         GitHub[GitHub Repository<br/>monorepo]
     end
 
@@ -534,25 +534,25 @@ sequenceDiagram
 
     alt Tests Pass
         Actions->>Supabase: npx supabase db push
-        Supabase-->>Actions: ✅ Migrations applied
+        Supabase-->>Actions: Migrations applied
 
         Actions->>Vercel: Deploy API + Web + CRM
-        Vercel-->>Actions: ✅ Deployed (3 apps)
+        Vercel-->>Actions: Deployed (3 apps)
 
         par Mobile Build (Optional)
             Actions->>EAS: eas build --platform all
-            EAS-->>Actions: ✅ APK + IPA ready
+            EAS-->>Actions: APK + IPA ready
         end
 
-        Actions-->>Dev: ✅ Deployment success
+        Actions-->>Dev: Deployment success
     else Tests Fail
-        Actions-->>Dev: ❌ Deployment blocked
+        Actions-->>Dev: Deployment blocked
     end
 ```
 
 ---
 
-## 📈 Scalabilité
+## Scalability
 
 ### Horizontal Scaling Strategy
 
@@ -607,13 +607,13 @@ graph LR
     RateLimit -->|Pass| Cache{Redis Cache}
     RateLimit -->|Block| Response429[429 Too Many Requests]
 
-    Cache -->|Hit 87%| FastResponse[Fast Response<br/>~15ms ⚡]
+    Cache -->|Hit 87%| FastResponse[Fast Response<br/>~15ms]
     Cache -->|Miss 13%| Database{PostgreSQL}
 
-    Database -->|Simple Query| MediumResponse[Medium Response<br/>~50ms ✅]
-    Database -->|Complex Query| SlowResponse[Slow Response<br/>~200ms ⚠️]
+    Database -->|Simple Query| MediumResponse[Medium Response<br/>~50ms]
+    Database -->|Complex Query| SlowResponse[Slow Response<br/>~200ms]
 
-    SlowResponse --> Bottleneck[⚠️ Potential Bottleneck]
+    SlowResponse --> Bottleneck[Potential Bottleneck]
 
     Bottleneck -.Solution 1.-> AddIndex[Add DB Indexes]
     Bottleneck -.Solution 2.-> CacheMore[Increase Cache TTL]
@@ -653,7 +653,7 @@ graph TB
 
 ---
 
-## 🔗 Services Externes
+## External Services
 
 ### Integrations Architecture
 
@@ -683,7 +683,7 @@ graph TB
 
 ---
 
-## 📊 Monitoring & Observability
+## Monitoring & Observability
 
 ### Observability Stack
 
@@ -724,16 +724,16 @@ graph TB
 
 ---
 
-## 📚 Références
+## References
 
 - [ADRs](./adr/README.md) - Architecture Decision Records
-- [Database Schema](./DATABASE.md) - Schéma détaillé 27 tables
-- [API Documentation](./API.md) - 20 endpoints documentés
+- [Database Schema](./DATABASE.md) - Detailed 27 tables schema
+- [API Documentation](./API.md) - 20 documented endpoints
 - [Gamification System](./GAMIFICATION_SYSTEM.md) - Weekly challenges + Cosmetics
-- [Troubleshooting](./TROUBLESHOOTING.md) - Guide de debugging
+- [Troubleshooting](./TROUBLESHOOTING.md) - Debugging guide
 
 ---
 
 **Version**: 2.0.0
-**Dernière mise à jour**: 2025-10-17
-**Prochaine review**: Trimestrielle
+**Last updated**: 2025-10-17
+**Next review**: Quarterly
