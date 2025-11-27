@@ -1,21 +1,21 @@
-# 🗄️ Documentation Base de Données - Shift Express
+# Database Documentation - Shift Express
 
 **Version**: 2.0.0
-**Dernière mise à jour**: 2025-10-17
-**Schéma**: PostgreSQL 15+ (Supabase)
+**Last updated**: 2025-10-17
+**Schema**: PostgreSQL 15+ (Supabase)
 
 ---
 
-## 📋 Table des Matières
+## Table of Contents
 
-- [Vue d'ensemble](#vue-densemble)
-- [Schéma Complet](#schéma-complet)
-- [Tables Principales](#tables-principales)
+- [Overview](#overview)
+- [Complete Schema](#complete-schema)
+- [Main Tables](#main-tables)
   - [Core Business](#core-business)
-  - [Système de Gamification](#système-de-gamification)
-  - [Système d'Invitations](#système-dinvitations)
+  - [Gamification System](#gamification-system)
+  - [Invitation System](#invitation-system)
   - [Support & Audit](#support--audit)
-- [Fonctions & Triggers](#fonctions--triggers)
+- [Functions & Triggers](#functions--triggers)
 - [Row Level Security (RLS)](#row-level-security-rls)
 - [Indexes & Performance](#indexes--performance)
 - [Enums](#enums)
@@ -23,11 +23,11 @@
 
 ---
 
-## 🏗️ Vue d'ensemble
+## Overview
 
-### Architecture Multi-Tenant
+### Multi-Tenant Architecture
 
-La base de données utilise une architecture multi-tenant isolée par `company_id` avec Row Level Security (RLS) pour garantir l'isolation des données entre entreprises clientes.
+The database uses an isolated multi-tenant architecture by `company_id` with Row Level Security (RLS) to ensure data isolation between client companies.
 
 ```mermaid
 graph TB
@@ -44,25 +44,25 @@ graph TB
 
 ### Technologies
 
-- **SGBD**: PostgreSQL 15+ (Supabase)
-- **ORM**: Supabase JS Client (avec types TypeScript auto-générés)
-- **Authentification**: Supabase Auth (JWT + RLS)
+- **DBMS**: PostgreSQL 15+ (Supabase)
+- **ORM**: Supabase JS Client (with auto-generated TypeScript types)
+- **Authentication**: Supabase Auth (JWT + RLS)
 - **Migrations**: Supabase CLI
-- **Backup**: Automatique quotidien (Supabase)
+- **Backup**: Daily automatic (Supabase)
 
-### Statistiques Actuelles
+### Current Statistics
 
 - **Tables**: 27
-- **Fonctions**: 41
+- **Functions**: 41
 - **Enums**: 8
 - **Triggers**: 6
 - **Cron Jobs**: 3
 
 ---
 
-## 📊 Schéma Complet
+## Complete Schema
 
-### Tables Core Business
+### Core Business Tables
 
 ```mermaid
 erDiagram
@@ -95,702 +95,702 @@ erDiagram
 
 ---
 
-## 📋 Tables Principales
+## Main Tables
 
 ### Core Business
 
 #### `companies`
-Table centrale du système multi-tenant. Chaque entreprise cliente a une entrée.
+Central table of the multi-tenant system. Each client company has an entry.
 
-| Colonne | Type | Contraintes | Défaut | Description |
-|---------|------|-------------|--------|-------------|
-| `id` | UUID | PK | gen_random_uuid() | Identifiant unique |
-| `name` | TEXT | NOT NULL | - | Nom de l'entreprise |
-| `logo_url` | TEXT | - | NULL | URL du logo |
+| Column | Type | Constraints | Default | Description |
+|--------|------|-------------|---------|-------------|
+| `id` | UUID | PK | gen_random_uuid() | Unique identifier |
+| `name` | TEXT | NOT NULL | - | Company name |
+| `logo_url` | TEXT | - | NULL | Logo URL |
 | `subscription_plan` | ENUM | - | 'free' | Plan: free, pro, ultra, enterprise |
 | `subscription_status` | ENUM | - | 'trialing' | active, trialing, past_due, canceled, incomplete |
-| `subscription_interval` | TEXT | - | NULL | 'month' ou 'year' |
-| `stripe_customer_id` | TEXT | UNIQUE | NULL | ID client Stripe |
-| `stripe_subscription_id` | TEXT | UNIQUE | NULL | ID subscription Stripe |
-| `subscription_current_period_end` | TIMESTAMPTZ | - | NULL | Fin période actuelle |
-| `cancel_at_period_end` | BOOLEAN | - | false | Annulation prévue |
-| `trial_ends_at` | TIMESTAMPTZ | - | NULL | Fin de la période d'essai |
+| `subscription_interval` | TEXT | - | NULL | 'month' or 'year' |
+| `stripe_customer_id` | TEXT | UNIQUE | NULL | Stripe customer ID |
+| `stripe_subscription_id` | TEXT | UNIQUE | NULL | Stripe subscription ID |
+| `subscription_current_period_end` | TIMESTAMPTZ | - | NULL | Current period end |
+| `cancel_at_period_end` | BOOLEAN | - | false | Planned cancellation |
+| `trial_ends_at` | TIMESTAMPTZ | - | NULL | Trial period end |
 | `default_language` | ENUM | - | 'fr' | fr, en, es, it, zh |
-| `created_at` | TIMESTAMPTZ | - | now() | Date de création |
-| `updated_at` | TIMESTAMPTZ | - | now() | Dernière mise à jour |
+| `created_at` | TIMESTAMPTZ | - | now() | Creation date |
+| `updated_at` | TIMESTAMPTZ | - | now() | Last update |
 
-**Fonctions associées**:
-- `get_subscription_limits(plan)` - Retourne max_establishments, max_shifts, etc.
-- `delete_company(company_id)` - Suppression sécurisée avec cascade
+**Associated functions**:
+- `get_subscription_limits(plan)` - Returns max_establishments, max_shifts, etc.
+- `delete_company(company_id)` - Secure deletion with cascade
 
 **RLS Policies**:
-- Admins voient leur propre company uniquement
+- Admins see their own company only
 
 ---
 
 #### `establishments`
-Sites physiques des entreprises (restaurants, hôtels, magasins, etc.)
+Physical sites of companies (restaurants, hotels, stores, etc.)
 
-| Colonne | Type | Contraintes | Défaut | Description |
-|---------|------|-------------|--------|-------------|
-| `id` | UUID | PK | gen_random_uuid() | Identifiant unique |
+| Column | Type | Constraints | Default | Description |
+|--------|------|-------------|---------|-------------|
+| `id` | UUID | PK | gen_random_uuid() | Unique identifier |
 | `company_id` | UUID | FK NOT NULL | - | → companies(id) |
-| `name` | TEXT | NOT NULL | - | Nom de l'établissement |
-| `address` | TEXT | - | NULL | Adresse complète |
-| `city` | TEXT | - | NULL | Ville |
-| `postal_code` | TEXT | - | NULL | Code postal |
+| `name` | TEXT | NOT NULL | - | Establishment name |
+| `address` | TEXT | - | NULL | Full address |
+| `city` | TEXT | - | NULL | City |
+| `postal_code` | TEXT | - | NULL | Postal code |
 | `status` | ENUM | - | 'active' | active, standby |
-| `created_at` | TIMESTAMPTZ | - | now() | Date de création |
-| `updated_at` | TIMESTAMPTZ | - | now() | Dernière mise à jour |
+| `created_at` | TIMESTAMPTZ | - | now() | Creation date |
+| `updated_at` | TIMESTAMPTZ | - | now() | Last update |
 
-**Limites par plan**:
-- Free: 1 établissement
-- Pro: 3 établissements
-- Ultra: 10 établissements
-- Enterprise: Illimité
+**Limits by plan**:
+- Free: 1 establishment
+- Pro: 3 establishments
+- Ultra: 10 establishments
+- Enterprise: Unlimited
 
 **Triggers**:
-- `check_establishment_limit` (BEFORE INSERT) - Valide les limites du plan
+- `check_establishment_limit` (BEFORE INSERT) - Validates plan limits
 
 ---
 
 #### `positions`
-Postes de travail disponibles dans les établissements
+Job positions available in establishments
 
-| Colonne | Type | Contraintes | Défaut | Description |
-|---------|------|-------------|--------|-------------|
-| `id` | UUID | PK | gen_random_uuid() | Identifiant unique |
+| Column | Type | Constraints | Default | Description |
+|--------|------|-------------|---------|-------------|
+| `id` | UUID | PK | gen_random_uuid() | Unique identifier |
 | `company_id` | UUID | FK NOT NULL | - | → companies(id) |
 | `establishment_id` | UUID | FK | NULL | → establishments(id) |
-| `title` | TEXT | NOT NULL | - | Nom du poste (ex: "Serveur", "Cuisinier") |
-| `description` | TEXT | - | NULL | Description du poste |
-| `default_hourly_rate` | NUMERIC(10,2) | - | NULL | Taux horaire par défaut (€) |
-| `created_at` | TIMESTAMPTZ | - | now() | Date de création |
-| `updated_at` | TIMESTAMPTZ | - | now() | Dernière mise à jour |
+| `title` | TEXT | NOT NULL | - | Position name (e.g., "Server", "Cook") |
+| `description` | TEXT | - | NULL | Position description |
+| `default_hourly_rate` | NUMERIC(10,2) | - | NULL | Default hourly rate (€) |
+| `created_at` | TIMESTAMPTZ | - | now() | Creation date |
+| `updated_at` | TIMESTAMPTZ | - | now() | Last update |
 
 ---
 
 #### `users`
-Profils utilisateurs étendant auth.users
+User profiles extending auth.users
 
-| Colonne | Type | Contraintes | Défaut | Description |
-|---------|------|-------------|--------|-------------|
+| Column | Type | Constraints | Default | Description |
+|--------|------|-------------|---------|-------------|
 | `id` | UUID | PK | - | Matches auth.users(id) |
-| `email` | TEXT | NOT NULL UNIQUE | - | Email de connexion |
-| `first_name` | TEXT | - | NULL | Prénom |
-| `last_name` | TEXT | - | NULL | Nom |
-| `phone` | TEXT | - | NULL | Téléphone |
+| `email` | TEXT | NOT NULL UNIQUE | - | Login email |
+| `first_name` | TEXT | - | NULL | First name |
+| `last_name` | TEXT | - | NULL | Last name |
+| `phone` | TEXT | - | NULL | Phone |
 | `role` | ENUM | NOT NULL | 'employee' | admin, manager, employee |
 | `company_id` | UUID | FK | NULL | → companies(id) |
 | `assigned_establishment_id` | UUID | FK | NULL | → establishments(id) |
-| `points` | INTEGER | - | 0 | Points totaux (legacy, voir user_stats) |
-| `level` | INTEGER | - | 1 | Niveau (legacy, voir user_stats) |
-| `weekly_points` | INTEGER | - | 0 | Points hebdo (legacy, voir user_stats) |
-| `created_at` | TIMESTAMPTZ | - | now() | Date de création |
-| `updated_at` | TIMESTAMPTZ | - | now() | Dernière mise à jour |
+| `points` | INTEGER | - | 0 | Total points (legacy, see user_stats) |
+| `level` | INTEGER | - | 1 | Level (legacy, see user_stats) |
+| `weekly_points` | INTEGER | - | 0 | Weekly points (legacy, see user_stats) |
+| `created_at` | TIMESTAMPTZ | - | now() | Creation date |
+| `updated_at` | TIMESTAMPTZ | - | now() | Last update |
 
-**Note**: Les champs points/level/weekly_points sont dupliqués dans user_stats. Utiliser user_stats comme source de vérité.
+**Note**: The points/level/weekly_points fields are duplicated in user_stats. Use user_stats as source of truth.
 
-**Fonctions associées**:
-- `signup_employer(email, password, company_name)` - Inscription employeur
-- `complete_employer_signup(user_id, company_name)` - Finalisation onboarding
-- `can_access_establishment(user_id, establishment_id)` - Vérification permission
+**Associated functions**:
+- `signup_employer(email, password, company_name)` - Employer registration
+- `complete_employer_signup(user_id, company_name)` - Finalize onboarding
+- `can_access_establishment(user_id, establishment_id)` - Permission verification
 
 **Triggers**:
-- Auto-création de user_stats à l'insertion
+- Auto-creation of user_stats on insert
 
 ---
 
 #### `employees`
-Profil des employés liés aux établissements
+Employee profiles linked to establishments
 
-| Colonne | Type | Contraintes | Défaut | Description |
-|---------|------|-------------|--------|-------------|
-| `id` | UUID | PK | gen_random_uuid() | Identifiant unique |
+| Column | Type | Constraints | Default | Description |
+|--------|------|-------------|---------|-------------|
+| `id` | UUID | PK | gen_random_uuid() | Unique identifier |
 | `user_id` | UUID | FK NOT NULL UNIQUE | - | → users(id) |
 | `company_id` | UUID | FK NOT NULL | - | → companies(id) |
 | `establishment_id` | UUID | FK | NULL | → establishments(id) |
-| `active` | BOOLEAN | - | true | Employé actif |
-| `hourly_rate` | NUMERIC(10,2) | - | NULL | Taux horaire (€) |
+| `active` | BOOLEAN | - | true | Active employee |
+| `hourly_rate` | NUMERIC(10,2) | - | NULL | Hourly rate (€) |
 | `reliability_score` | NUMERIC(3,2) | - | 1.00 | Score 0.00-1.00 |
-| `avg_response_time_seconds` | INTEGER | - | NULL | Temps de réponse moyen |
-| `total_shifts_proposed` | INTEGER | - | 0 | Shifts proposés |
-| `total_shifts_accepted` | INTEGER | - | 0 | Shifts acceptés |
-| `total_shifts_completed` | INTEGER | - | 0 | Shifts complétés |
-| `total_shifts_rejected` | INTEGER | - | 0 | Shifts rejetés |
-| `total_shifts_withdrawn` | INTEGER | - | 0 | Shifts retirés |
-| `total_no_shows` | INTEGER | - | 0 | Absences non justifiées |
-| `created_at` | TIMESTAMPTZ | - | now() | Date de création |
-| `updated_at` | TIMESTAMPTZ | - | now() | Dernière mise à jour |
+| `avg_response_time_seconds` | INTEGER | - | NULL | Average response time |
+| `total_shifts_proposed` | INTEGER | - | 0 | Proposed shifts |
+| `total_shifts_accepted` | INTEGER | - | 0 | Accepted shifts |
+| `total_shifts_completed` | INTEGER | - | 0 | Completed shifts |
+| `total_shifts_rejected` | INTEGER | - | 0 | Rejected shifts |
+| `total_shifts_withdrawn` | INTEGER | - | 0 | Withdrawn shifts |
+| `total_no_shows` | INTEGER | - | 0 | Unexcused absences |
+| `created_at` | TIMESTAMPTZ | - | now() | Creation date |
+| `updated_at` | TIMESTAMPTZ | - | now() | Last update |
 
-**Contraintes**:
-- UNIQUE(user_id) - Un user = 1 employee
+**Constraints**:
+- UNIQUE(user_id) - One user = 1 employee
 
-**Fonctions associées**:
-- `calculate_reliability_score(employee_id)` - Calcul du score de fiabilité
-- `recalculate_all_reliability_scores()` - Recalcul batch
+**Associated functions**:
+- `calculate_reliability_score(employee_id)` - Reliability score calculation
+- `recalculate_all_reliability_scores()` - Batch recalculation
 
 **Triggers**:
-- Auto-mise à jour des stats sur changement de shift_application
+- Auto-update of stats on shift_application change
 
 ---
 
 #### `shifts`
-Shifts créés par les employeurs
+Shifts created by employers
 
-| Colonne | Type | Contraintes | Défaut | Description |
-|---------|------|-------------|--------|-------------|
-| `id` | UUID | PK | gen_random_uuid() | Identifiant unique |
+| Column | Type | Constraints | Default | Description |
+|--------|------|-------------|---------|-------------|
+| `id` | UUID | PK | gen_random_uuid() | Unique identifier |
 | `company_id` | UUID | FK NOT NULL | - | → companies(id) |
 | `establishment_id` | UUID | FK NOT NULL | - | → establishments(id) |
 | `position_id` | UUID | FK NOT NULL | - | → positions(id) |
-| `start_time` | TIMESTAMPTZ | NOT NULL | - | Début du shift |
-| `end_time` | TIMESTAMPTZ | NOT NULL | - | Fin du shift |
-| `break_duration_minutes` | INTEGER | - | 0 | Pause (minutes) |
-| `required_employees` | INTEGER | - | 1 | Nombre d'employés requis |
-| `filled_employees` | INTEGER | - | 0 | Nombre d'employés acceptés |
+| `start_time` | TIMESTAMPTZ | NOT NULL | - | Shift start |
+| `end_time` | TIMESTAMPTZ | NOT NULL | - | Shift end |
+| `break_duration_minutes` | INTEGER | - | 0 | Break (minutes) |
+| `required_employees` | INTEGER | - | 1 | Number of required employees |
+| `filled_employees` | INTEGER | - | 0 | Number of accepted employees |
 | `status` | ENUM | - | 'pending' | pending, partially_filled, filled, completed, canceled, closed, expired |
-| `description` | TEXT | - | NULL | Description du shift |
-| `published_at` | TIMESTAMPTZ | - | NULL | Date de publication |
-| `filled_at` | TIMESTAMPTZ | - | NULL | Date de remplissage complet |
-| `created_at` | TIMESTAMPTZ | - | now() | Date de création |
-| `updated_at` | TIMESTAMPTZ | - | now() | Dernière mise à jour |
+| `description` | TEXT | - | NULL | Shift description |
+| `published_at` | TIMESTAMPTZ | - | NULL | Publication date |
+| `filled_at` | TIMESTAMPTZ | - | NULL | Full completion date |
+| `created_at` | TIMESTAMPTZ | - | now() | Creation date |
+| `updated_at` | TIMESTAMPTZ | - | now() | Last update |
 
-**Limites par plan**:
-- Free: 1 shift actif max
-- Pro+: Illimité
+**Limits by plan**:
+- Free: 1 active shift max
+- Pro+: Unlimited
 
 **Indexes**:
-- `idx_shifts_company_status` sur (company_id, status)
-- `idx_shifts_establishment` sur (establishment_id)
-- `idx_shifts_start_time` sur (start_time) WHERE status IN ('open', 'partially_filled')
+- `idx_shifts_company_status` on (company_id, status)
+- `idx_shifts_establishment` on (establishment_id)
+- `idx_shifts_start_time` on (start_time) WHERE status IN ('open', 'partially_filled')
 
-**Fonctions associées**:
-- `auto_complete_shifts()` - Cron quotidien pour marquer shifts passés comme completed
-- `expire_old_shifts()` - Cron quotidien pour expirer shifts non remplis
+**Associated functions**:
+- `auto_complete_shifts()` - Daily cron to mark past shifts as completed
+- `expire_old_shifts()` - Daily cron to expire unfilled shifts
 
 **Triggers**:
-- `check_shift_limit` (BEFORE INSERT) - Valide les limites du plan
+- `check_shift_limit` (BEFORE INSERT) - Validates plan limits
 
 ---
 
 #### `shift_applications`
-Candidatures des employés aux shifts
+Employee applications to shifts
 
-| Colonne | Type | Contraintes | Défaut | Description |
-|---------|------|-------------|--------|-------------|
-| `id` | UUID | PK | gen_random_uuid() | Identifiant unique |
+| Column | Type | Constraints | Default | Description |
+|--------|------|-------------|---------|-------------|
+| `id` | UUID | PK | gen_random_uuid() | Unique identifier |
 | `shift_id` | UUID | FK NOT NULL | - | → shifts(id) |
 | `user_id` | UUID | FK NOT NULL | - | → users(id) |
 | `status` | ENUM | - | 'pending' | pending, accepted, rejected, applied, withdrawn |
-| `message` | TEXT | - | NULL | Message de candidature |
-| `response_time_seconds` | INTEGER | - | NULL | Temps de réponse (secondes) |
-| `no_show` | BOOLEAN | - | false | Absence non justifiée |
+| `message` | TEXT | - | NULL | Application message |
+| `response_time_seconds` | INTEGER | - | NULL | Response time (seconds) |
+| `no_show` | BOOLEAN | - | false | Unexcused absence |
 | `no_show_reported_by` | UUID | FK | NULL | → users(id) |
-| `no_show_reported_at` | TIMESTAMPTZ | - | NULL | Date de signalement |
+| `no_show_reported_at` | TIMESTAMPTZ | - | NULL | Report date |
 | `reviewed_by` | UUID | FK | NULL | → users(id) |
-| `reviewed_at` | TIMESTAMPTZ | - | NULL | Date de review |
-| `viewed_at` | TIMESTAMPTZ | - | NULL | Date de consultation |
-| `applied_at` | TIMESTAMPTZ | - | now() | Date de candidature |
+| `reviewed_at` | TIMESTAMPTZ | - | NULL | Review date |
+| `viewed_at` | TIMESTAMPTZ | - | NULL | View date |
+| `applied_at` | TIMESTAMPTZ | - | now() | Application date |
 
-**Contraintes**:
-- UNIQUE(shift_id, user_id) - 1 candidature par shift
+**Constraints**:
+- UNIQUE(shift_id, user_id) - 1 application per shift
 
 **Indexes**:
-- `idx_applications_shift_user` sur (shift_id, user_id)
-- `idx_applications_status` sur (status) WHERE status = 'pending'
-- `idx_applications_user_status` sur (user_id, status)
+- `idx_applications_shift_user` on (shift_id, user_id)
+- `idx_applications_status` on (status) WHERE status = 'pending'
+- `idx_applications_user_status` on (user_id, status)
 
-**RLS Policies** (Fixées dans migration 20251012192924):
-- `users_select_own_applications` - Users voient leurs candidatures
-- `users_insert_own_applications` - Users créent leurs candidatures
-- `users_update_own_applications` - Users mettent à jour leurs candidatures
-- `users_delete_own_applications` - Users suppriment leurs candidatures
-- `employers_view_company_applications` - Employers voient candidatures de leur company
-- `employers_update_company_applications` - Employers mettent à jour candidatures de leur company
+**RLS Policies** (Fixed in migration 20251012192924):
+- `users_select_own_applications` - Users see their applications
+- `users_insert_own_applications` - Users create their applications
+- `users_update_own_applications` - Users update their applications
+- `users_delete_own_applications` - Users delete their applications
+- `employers_view_company_applications` - Employers see their company applications
+- `employers_update_company_applications` - Employers update their company applications
 
 **Triggers**:
-- `trigger_notify_new_shift` (AFTER INSERT) - Envoie push notification
+- `trigger_notify_new_shift` (AFTER INSERT) - Sends push notification
 
 ---
 
-### Système de Gamification
+### Gamification System
 
 #### `user_stats`
-Statistiques et progression des utilisateurs
+User statistics and progression
 
-| Colonne | Type | Contraintes | Défaut | Description |
-|---------|------|-------------|--------|-------------|
+| Column | Type | Constraints | Default | Description |
+|--------|------|-------------|---------|-------------|
 | `user_id` | UUID | PK FK | - | → users(id) |
-| `total_points` | INTEGER | - | 0 | Points totaux accumulés |
-| `weekly_points` | INTEGER | - | 0 | Points de la semaine |
-| `current_streak_days` | INTEGER | - | 0 | Série de jours consécutifs |
-| `best_streak_days` | INTEGER | - | 0 | Meilleure série |
-| `last_login_date` | DATE | - | NULL | Dernière connexion |
-| `total_shifts_accepted` | INTEGER | - | 0 | Shifts acceptés |
-| `total_shifts_completed` | INTEGER | - | 0 | Shifts complétés |
-| `total_shifts_cancelled` | INTEGER | - | 0 | Shifts annulés |
-| `total_shifts_offered` | INTEGER | - | 0 | Shifts proposés |
-| `responses_under_2min` | INTEGER | - | 0 | Réponses < 2min |
-| `responses_2_to_5min` | INTEGER | - | 0 | Réponses 2-5min |
-| `avg_response_time_minutes` | NUMERIC(10,2) | - | NULL | Temps de réponse moyen |
-| `morning_shifts_accepted` | INTEGER | - | 0 | Shifts matin acceptés (5h-12h) |
-| `night_shifts_accepted` | INTEGER | - | 0 | Shifts nuit acceptés (20h-5h) |
-| `weekend_shifts_completed` | INTEGER | - | 0 | Shifts weekend complétés |
-| `no_cancellation_streak` | INTEGER | - | 0 | Série sans annulation |
-| `first_responder_count` | INTEGER | - | 0 | Nombre de fois 1er à répondre |
-| `week_start_date` | DATE | - | current week | Début de la semaine actuelle |
-| `last_reset_at` | TIMESTAMPTZ | - | NULL | Dernière réinit hebdo |
+| `total_points` | INTEGER | - | 0 | Total accumulated points |
+| `weekly_points` | INTEGER | - | 0 | Weekly points |
+| `current_streak_days` | INTEGER | - | 0 | Consecutive days streak |
+| `best_streak_days` | INTEGER | - | 0 | Best streak |
+| `last_login_date` | DATE | - | NULL | Last login |
+| `total_shifts_accepted` | INTEGER | - | 0 | Accepted shifts |
+| `total_shifts_completed` | INTEGER | - | 0 | Completed shifts |
+| `total_shifts_cancelled` | INTEGER | - | 0 | Cancelled shifts |
+| `total_shifts_offered` | INTEGER | - | 0 | Offered shifts |
+| `responses_under_2min` | INTEGER | - | 0 | Responses < 2min |
+| `responses_2_to_5min` | INTEGER | - | 0 | Responses 2-5min |
+| `avg_response_time_minutes` | NUMERIC(10,2) | - | NULL | Average response time |
+| `morning_shifts_accepted` | INTEGER | - | 0 | Morning shifts accepted (5am-12pm) |
+| `night_shifts_accepted` | INTEGER | - | 0 | Night shifts accepted (8pm-5am) |
+| `weekend_shifts_completed` | INTEGER | - | 0 | Weekend shifts completed |
+| `no_cancellation_streak` | INTEGER | - | 0 | Streak without cancellation |
+| `first_responder_count` | INTEGER | - | 0 | Times being first to respond |
+| `week_start_date` | DATE | - | current week | Current week start |
+| `last_reset_at` | TIMESTAMPTZ | - | NULL | Last weekly reset |
 | `equipped_avatar_id` | UUID | FK | NULL | → cosmetic_items(id) |
 | `equipped_title_id` | UUID | FK | NULL | → cosmetic_items(id) |
 | `equipped_badge_id` | UUID | FK | NULL | → cosmetic_items(id) |
 | `equipped_frame_id` | UUID | FK | NULL | → cosmetic_items(id) |
 | `equipped_color_id` | UUID | FK | NULL | → cosmetic_items(id) |
-| `created_at` | TIMESTAMPTZ | - | now() | Date de création |
-| `updated_at` | TIMESTAMPTZ | - | now() | Dernière mise à jour |
+| `created_at` | TIMESTAMPTZ | - | now() | Creation date |
+| `updated_at` | TIMESTAMPTZ | - | now() | Last update |
 
 **Indexes**:
-- `idx_user_stats_weekly_points` sur (weekly_points DESC) - Leaderboard hebdo
-- `idx_user_stats_total_points` sur (total_points DESC) - Leaderboard total
+- `idx_user_stats_weekly_points` on (weekly_points DESC) - Weekly leaderboard
+- `idx_user_stats_total_points` on (total_points DESC) - Total leaderboard
 
-**Fonctions associées**:
-- `increment_user_points(user_id, points)` - Ajoute des points
-- `increment_user_stat(user_id, stat_name, increment)` - Incrémente stat spécifique
-- `reset_user_stat(user_id, stat_name)` - Réinitialise stat
-- `add_xp_to_user(user_id, amount, reason)` - Ajoute XP avec raison
+**Associated functions**:
+- `increment_user_points(user_id, points)` - Add points
+- `increment_user_stat(user_id, stat_name, increment)` - Increment specific stat
+- `reset_user_stat(user_id, stat_name)` - Reset stat
+- `add_xp_to_user(user_id, amount, reason)` - Add XP with reason
 
 **Triggers**:
-- Reset hebdomadaire automatique (cron: lundis 00:00 UTC)
+- Automatic weekly reset (cron: Mondays 00:00 UTC)
 
 ---
 
 #### `cosmetic_items`
-Catalogue des items cosmétiques déblocables
+Catalog of unlockable cosmetic items
 
-| Colonne | Type | Contraintes | Défaut | Description |
-|---------|------|-------------|--------|-------------|
-| `id` | UUID | PK | gen_random_uuid() | Identifiant unique |
+| Column | Type | Constraints | Default | Description |
+|--------|------|-------------|---------|-------------|
+| `id` | UUID | PK | gen_random_uuid() | Unique identifier |
 | `type` | TEXT | NOT NULL | - | avatar, frame, badge, title, color |
-| `name` | TEXT | NOT NULL | - | Nom de l'item |
+| `name` | TEXT | NOT NULL | - | Item name |
 | `description` | TEXT | - | NULL | Description |
 | `rarity` | TEXT | NOT NULL | 'common' | common, rare, epic, legendary |
-| `preview_url` | TEXT | - | NULL | URL ou gradient:#hex,#hex,... |
-| `points_cost` | INTEGER | NOT NULL | 0 | Coût en points (0 = cadeau) |
-| `unlock_requirement` | JSONB | - | NULL | Conditions de déblocage |
-| `is_active` | BOOLEAN | - | true | Item disponible |
-| `sort_order` | INTEGER | - | 0 | Ordre d'affichage |
-| `created_at` | TIMESTAMPTZ | - | now() | Date de création |
-| `updated_at` | TIMESTAMPTZ | - | now() | Dernière mise à jour |
+| `preview_url` | TEXT | - | NULL | URL or gradient:#hex,#hex,... |
+| `points_cost` | INTEGER | NOT NULL | 0 | Points cost (0 = gift) |
+| `unlock_requirement` | JSONB | - | NULL | Unlock conditions |
+| `is_active` | BOOLEAN | - | true | Item available |
+| `sort_order` | INTEGER | - | 0 | Display order |
+| `created_at` | TIMESTAMPTZ | - | now() | Creation date |
+| `updated_at` | TIMESTAMPTZ | - | now() | Last update |
 
 **Types**: avatar | frame | badge | title | color
 
-**Raretés et Coûts Typiques**:
-- `common`: Gratuits (items de démarrage)
+**Rarities and Typical Costs**:
+- `common`: Free (starter items)
 - `rare`: 500-700 points
 - `epic`: 1500-3500 points
 - `legendary`: 7000-15000 points
 
-**Format Preview URL**:
-- Images: URL standard (https://...)
+**Preview URL Format**:
+- Images: Standard URL (https://...)
 - Gradients: `gradient:#ec4899,#8b5cf6,#3b82f6`
 
-**Seeding**: 61 items pré-créés dans migrations
+**Seeding**: 61 pre-created items in migrations
 
 ---
 
 #### `user_cosmetics`
-Inventaire des cosmétiques débloqués par utilisateur
+Inventory of cosmetics unlocked by user
 
-| Colonne | Type | Contraintes | Défaut | Description |
-|---------|------|-------------|--------|-------------|
-| `id` | UUID | PK | gen_random_uuid() | Identifiant unique |
+| Column | Type | Constraints | Default | Description |
+|--------|------|-------------|---------|-------------|
+| `id` | UUID | PK | gen_random_uuid() | Unique identifier |
 | `user_id` | UUID | FK NOT NULL | - | → users(id) |
 | `cosmetic_item_id` | UUID | FK NOT NULL | - | → cosmetic_items(id) |
-| `is_equipped` | BOOLEAN | - | false | Item équipé |
-| `unlocked_at` | TIMESTAMPTZ | - | now() | Date de déblocage |
-| `created_at` | TIMESTAMPTZ | - | now() | Date de création |
+| `is_equipped` | BOOLEAN | - | false | Item equipped |
+| `unlocked_at` | TIMESTAMPTZ | - | now() | Unlock date |
+| `created_at` | TIMESTAMPTZ | - | now() | Creation date |
 
-**Contraintes**:
+**Constraints**:
 - UNIQUE(user_id, cosmetic_item_id)
 
 **Indexes**:
-- `idx_user_cosmetics_user` sur (user_id)
+- `idx_user_cosmetics_user` on (user_id)
 
-**Fonctions associées**:
-- `unlock_badge_for_user(user_id, badge_id)` - Débloque cosmétique
+**Associated functions**:
+- `unlock_badge_for_user(user_id, badge_id)` - Unlock cosmetic
 
 ---
 
 #### `weekly_challenges`
-Défis hebdomadaires pour les employés
+Weekly challenges for employees
 
-| Colonne | Type | Contraintes | Défaut | Description |
-|---------|------|-------------|--------|-------------|
-| `id` | UUID | PK | gen_random_uuid() | Identifiant unique |
-| `challenge_key` | TEXT | NOT NULL UNIQUE | - | Clé technique du défi |
-| `name` | TEXT | NOT NULL | - | Nom du défi |
+| Column | Type | Constraints | Default | Description |
+|--------|------|-------------|---------|-------------|
+| `id` | UUID | PK | gen_random_uuid() | Unique identifier |
+| `challenge_key` | TEXT | NOT NULL UNIQUE | - | Technical challenge key |
+| `name` | TEXT | NOT NULL | - | Challenge name |
 | `description` | TEXT | NOT NULL | - | Description |
-| `points_reward` | INTEGER | NOT NULL | - | Points à gagner |
-| `target_count` | INTEGER | - | 1 | Objectif à atteindre |
-| `icon` | TEXT | - | NULL | Icône (emoji ou URL) |
-| `is_active` | BOOLEAN | - | true | Défi actif |
-| `sort_order` | INTEGER | - | 0 | Ordre d'affichage |
-| `created_at` | TIMESTAMPTZ | - | now() | Date de création |
-| `updated_at` | TIMESTAMPTZ | - | now() | Dernière mise à jour |
+| `points_reward` | INTEGER | NOT NULL | - | Points to earn |
+| `target_count` | INTEGER | - | 1 | Target to reach |
+| `icon` | TEXT | - | NULL | Icon (emoji or URL) |
+| `is_active` | BOOLEAN | - | true | Active challenge |
+| `sort_order` | INTEGER | - | 0 | Display order |
+| `created_at` | TIMESTAMPTZ | - | now() | Creation date |
+| `updated_at` | TIMESTAMPTZ | - | now() | Last update |
 
-**Défis Actifs** (7 pré-seedés):
-1. `accept_3_shifts` - Accepter 3 shifts (100 pts, target: 3)
-2. `complete_5_shifts` - Compléter 5 shifts (200 pts, target: 5)
-3. `fast_responder` - 3 réponses < 2min (150 pts, target: 3)
-4. `weekend_warrior` - 2 shifts weekend (150 pts, target: 2)
-5. `morning_person` - 3 shifts matin (120 pts, target: 3)
-6. `night_owl` - 2 shifts nuit (120 pts, target: 2)
-7. `perfect_week` - Aucune annulation (250 pts, target: 1)
+**Active Challenges** (7 pre-seeded):
+1. `accept_3_shifts` - Accept 3 shifts (100 pts, target: 3)
+2. `complete_5_shifts` - Complete 5 shifts (200 pts, target: 5)
+3. `fast_responder` - 3 responses < 2min (150 pts, target: 3)
+4. `weekend_warrior` - 2 weekend shifts (150 pts, target: 2)
+5. `morning_person` - 3 morning shifts (120 pts, target: 3)
+6. `night_owl` - 2 night shifts (120 pts, target: 2)
+7. `perfect_week` - No cancellation (250 pts, target: 1)
 
 ---
 
 #### `user_weekly_progress`
-Progression hebdomadaire des utilisateurs sur les défis
+Weekly user progress on challenges
 
-| Colonne | Type | Contraintes | Défaut | Description |
-|---------|------|-------------|--------|-------------|
-| `id` | UUID | PK | gen_random_uuid() | Identifiant unique |
+| Column | Type | Constraints | Default | Description |
+|--------|------|-------------|---------|-------------|
+| `id` | UUID | PK | gen_random_uuid() | Unique identifier |
 | `user_id` | UUID | FK NOT NULL | - | → users(id) |
 | `challenge_id` | UUID | FK NOT NULL | - | → weekly_challenges(id) |
-| `week_start_date` | DATE | NOT NULL | - | Début de la semaine |
-| `current_count` | INTEGER | - | 0 | Progression actuelle |
-| `completed` | BOOLEAN | - | false | Défi complété |
-| `claimed` | BOOLEAN | - | false | Récompense récupérée |
-| `completed_at` | TIMESTAMPTZ | - | NULL | Date de complétion |
-| `claimed_at` | TIMESTAMPTZ | - | NULL | Date de réclamation |
-| `created_at` | TIMESTAMPTZ | - | now() | Date de création |
-| `updated_at` | TIMESTAMPTZ | - | now() | Dernière mise à jour |
+| `week_start_date` | DATE | NOT NULL | - | Week start |
+| `current_count` | INTEGER | - | 0 | Current progress |
+| `completed` | BOOLEAN | - | false | Challenge completed |
+| `claimed` | BOOLEAN | - | false | Reward claimed |
+| `completed_at` | TIMESTAMPTZ | - | NULL | Completion date |
+| `claimed_at` | TIMESTAMPTZ | - | NULL | Claim date |
+| `created_at` | TIMESTAMPTZ | - | now() | Creation date |
+| `updated_at` | TIMESTAMPTZ | - | now() | Last update |
 
-**Contraintes**:
+**Constraints**:
 - UNIQUE(user_id, challenge_id, week_start_date)
 
 **Indexes**:
-- `idx_user_progress_user_week` sur (user_id, week_start_date)
+- `idx_user_progress_user_week` on (user_id, week_start_date)
 
-**Fonctions associées** (Fixées dans migration 20251012201326):
-- `increment_challenge_progress(user_id, challenge_id, increment, week_start)` - Incrémente progression
-- `claim_challenge_reward(user_id, challenge_id, week_start)` - Réclame récompense avec rate limiting
+**Associated functions** (Fixed in migration 20251012201326):
+- `increment_challenge_progress(user_id, challenge_id, increment, week_start)` - Increment progress
+- `claim_challenge_reward(user_id, challenge_id, week_start)` - Claim reward with rate limiting
 
 ---
 
 #### `challenges` (Legacy)
-Ancien système de challenges génériques (remplacé par weekly_challenges)
+Old generic challenges system (replaced by weekly_challenges)
 
-| Colonne | Type | Contraintes | Défaut | Description |
-|---------|------|-------------|--------|-------------|
-| `id` | UUID | PK | gen_random_uuid() | Identifiant unique |
-| `name` | TEXT | NOT NULL | - | Nom du challenge |
+| Column | Type | Constraints | Default | Description |
+|--------|------|-------------|---------|-------------|
+| `id` | UUID | PK | gen_random_uuid() | Unique identifier |
+| `name` | TEXT | NOT NULL | - | Challenge name |
 | `description` | TEXT | - | NULL | Description |
-| `points_reward` | INTEGER | NOT NULL | - | Points récompense |
-| `target_value` | INTEGER | - | NULL | Valeur cible |
-| `active` | BOOLEAN | - | true | Challenge actif |
-| `created_at` | TIMESTAMPTZ | - | now() | Date de création |
-| `updated_at` | TIMESTAMPTZ | - | now() | Dernière mise à jour |
+| `points_reward` | INTEGER | NOT NULL | - | Reward points |
+| `target_value` | INTEGER | - | NULL | Target value |
+| `active` | BOOLEAN | - | true | Active challenge |
+| `created_at` | TIMESTAMPTZ | - | now() | Creation date |
+| `updated_at` | TIMESTAMPTZ | - | now() | Last update |
 
-**Status**: Table legacy conservée pour rétrocompatibilité
+**Status**: Legacy table kept for backward compatibility
 
 ---
 
 #### `employee_challenges` (Legacy)
-Ancien système de progression par employé (remplacé par user_weekly_progress)
+Old per-employee progression system (replaced by user_weekly_progress)
 
-| Colonne | Type | Contraintes | Défaut | Description |
-|---------|------|-------------|--------|-------------|
-| `id` | UUID | PK | gen_random_uuid() | Identifiant unique |
+| Column | Type | Constraints | Default | Description |
+|--------|------|-------------|---------|-------------|
+| `id` | UUID | PK | gen_random_uuid() | Unique identifier |
 | `employee_id` | UUID | FK | - | → employees(id) |
 | `challenge_id` | UUID | FK | - | → challenges(id) |
-| `progress` | INTEGER | - | 0 | Progression |
-| `completed_at` | TIMESTAMPTZ | - | NULL | Date de complétion |
+| `progress` | INTEGER | - | 0 | Progress |
+| `completed_at` | TIMESTAMPTZ | - | NULL | Completion date |
 
-**Status**: Table legacy conservée pour migration
+**Status**: Legacy table kept for migration
 
 ---
 
 #### `rewards`
-Catalogue des récompenses échangeables
+Catalog of redeemable rewards
 
-| Colonne | Type | Contraintes | Défaut | Description |
-|---------|------|-------------|--------|-------------|
-| `id` | UUID | PK | gen_random_uuid() | Identifiant unique |
-| `name` | TEXT | NOT NULL | - | Nom de la récompense |
+| Column | Type | Constraints | Default | Description |
+|--------|------|-------------|---------|-------------|
+| `id` | UUID | PK | gen_random_uuid() | Unique identifier |
+| `name` | TEXT | NOT NULL | - | Reward name |
 | `description` | TEXT | - | NULL | Description |
 | `type` | TEXT | NOT NULL | 'voucher' | voucher, physical, digital |
-| `value` | NUMERIC(10,2) | NOT NULL | 0 | Valeur (€) |
-| `points_required` | INTEGER | NOT NULL | - | Points requis |
-| `stock_quantity` | INTEGER | - | NULL | Stock disponible |
-| `image_url` | TEXT | - | NULL | Image de la récompense |
-| `is_active` | BOOLEAN | - | true | Récompense active |
-| `created_at` | TIMESTAMPTZ | - | now() | Date de création |
-| `updated_at` | TIMESTAMPTZ | - | now() | Dernière mise à jour |
+| `value` | NUMERIC(10,2) | NOT NULL | 0 | Value (€) |
+| `points_required` | INTEGER | NOT NULL | - | Required points |
+| `stock_quantity` | INTEGER | - | NULL | Available stock |
+| `image_url` | TEXT | - | NULL | Reward image |
+| `is_active` | BOOLEAN | - | true | Active reward |
+| `created_at` | TIMESTAMPTZ | - | now() | Creation date |
+| `updated_at` | TIMESTAMPTZ | - | now() | Last update |
 
 ---
 
 #### `employee_rewards`
-Historique d'échange de récompenses
+Reward redemption history
 
-| Colonne | Type | Contraintes | Défaut | Description |
-|---------|------|-------------|--------|-------------|
-| `id` | UUID | PK | gen_random_uuid() | Identifiant unique |
+| Column | Type | Constraints | Default | Description |
+|--------|------|-------------|---------|-------------|
+| `id` | UUID | PK | gen_random_uuid() | Unique identifier |
 | `employee_id` | UUID | FK NOT NULL | - | → employees(id) |
 | `reward_id` | UUID | FK NOT NULL | - | → rewards(id) |
 | `status` | TEXT | - | 'pending' | pending, issued, used, expired |
-| `voucher_code` | TEXT | UNIQUE | NULL | Code du voucher |
-| `redeemed_at` | TIMESTAMPTZ | - | now() | Date d'échange |
-| `used_at` | TIMESTAMPTZ | - | NULL | Date d'utilisation |
+| `voucher_code` | TEXT | UNIQUE | NULL | Voucher code |
+| `redeemed_at` | TIMESTAMPTZ | - | now() | Redemption date |
+| `used_at` | TIMESTAMPTZ | - | NULL | Usage date |
 
 ---
 
-### Système d'Invitations
+### Invitation System
 
 #### `establishment_invitations`
 QR code / link-based employee recruitment
 
-| Colonne | Type | Contraintes | Défaut | Description |
-|---------|------|-------------|--------|-------------|
-| `id` | UUID | PK | gen_random_uuid() | Identifiant unique |
+| Column | Type | Constraints | Default | Description |
+|--------|------|-------------|---------|-------------|
+| `id` | UUID | PK | gen_random_uuid() | Unique identifier |
 | `company_id` | UUID | FK NOT NULL | - | → companies(id) |
 | `establishment_id` | UUID | FK NOT NULL | - | → establishments(id) |
 | `created_by` | UUID | FK NOT NULL | - | → users(id) |
-| `token` | TEXT | NOT NULL UNIQUE | - | Token d'invitation |
+| `token` | TEXT | NOT NULL UNIQUE | - | Invitation token |
 | `description` | TEXT | - | NULL | Description |
-| `max_uses` | INTEGER | - | NULL | Utilisations max |
-| `current_uses` | INTEGER | - | 0 | Utilisations actuelles |
-| `expires_at` | TIMESTAMPTZ | - | NULL | Date d'expiration |
-| `is_active` | BOOLEAN | - | true | Invitation active |
-| `last_used_at` | TIMESTAMPTZ | - | NULL | Dernière utilisation |
-| `metadata` | JSONB | - | NULL | Métadonnées additionnelles |
-| `created_at` | TIMESTAMPTZ | - | now() | Date de création |
+| `max_uses` | INTEGER | - | NULL | Maximum uses |
+| `current_uses` | INTEGER | - | 0 | Current uses |
+| `expires_at` | TIMESTAMPTZ | - | NULL | Expiration date |
+| `is_active` | BOOLEAN | - | true | Active invitation |
+| `last_used_at` | TIMESTAMPTZ | - | NULL | Last use |
+| `metadata` | JSONB | - | NULL | Additional metadata |
+| `created_at` | TIMESTAMPTZ | - | now() | Creation date |
 
-**Contraintes**:
+**Constraints**:
 - UNIQUE(token)
 
-**Fonctions associées**:
-- `generate_invitation_token()` - Génère token unique
-- `validate_invitation_token_readonly(token)` - Valide sans side effects
-- `validate_invitation_token(token, user_id, employee_id, ip, user_agent)` - Validation complète
-- `increment_invitation_uses(token)` - Incrémente compteur
+**Associated functions**:
+- `generate_invitation_token()` - Generate unique token
+- `validate_invitation_token_readonly(token)` - Validate without side effects
+- `validate_invitation_token(token, user_id, employee_id, ip, user_agent)` - Full validation
+- `increment_invitation_uses(token)` - Increment counter
 
 ---
 
 #### `establishment_invitation_signups`
-Tracking des inscriptions via invitations
+Tracking of signups via invitations
 
-| Colonne | Type | Contraintes | Défaut | Description |
-|---------|------|-------------|--------|-------------|
-| `id` | UUID | PK | gen_random_uuid() | Identifiant unique |
+| Column | Type | Constraints | Default | Description |
+|--------|------|-------------|---------|-------------|
+| `id` | UUID | PK | gen_random_uuid() | Unique identifier |
 | `invitation_id` | UUID | FK NOT NULL | - | → establishment_invitations(id) |
 | `user_id` | UUID | FK NOT NULL | - | → users(id) |
 | `employee_id` | UUID | FK NOT NULL | - | → employees(id) |
-| `ip_address` | INET | - | NULL | Adresse IP |
+| `ip_address` | INET | - | NULL | IP address |
 | `user_agent` | TEXT | - | NULL | User agent |
-| `metadata` | JSONB | - | NULL | Métadonnées additionnelles |
-| `signed_up_at` | TIMESTAMPTZ | - | now() | Date d'inscription |
+| `metadata` | JSONB | - | NULL | Additional metadata |
+| `signed_up_at` | TIMESTAMPTZ | - | now() | Signup date |
 
 **Indexes**:
-- Index sur (invitation_id)
-- Index sur (user_id)
+- Index on (invitation_id)
+- Index on (user_id)
 
 ---
 
 #### `team_invitations`
-Invitations pour managers/admins
+Invitations for managers/admins
 
-| Colonne | Type | Contraintes | Défaut | Description |
-|---------|------|-------------|--------|-------------|
-| `id` | UUID | PK | gen_random_uuid() | Identifiant unique |
+| Column | Type | Constraints | Default | Description |
+|--------|------|-------------|---------|-------------|
+| `id` | UUID | PK | gen_random_uuid() | Unique identifier |
 | `company_id` | UUID | FK NOT NULL | - | → companies(id) |
 | `establishment_id` | UUID | FK | NULL | → establishments(id) |
 | `created_by` | UUID | FK | NULL | → users(id) |
-| `email` | TEXT | NOT NULL | - | Email de l'invité |
-| `first_name` | TEXT | - | NULL | Prénom |
-| `last_name` | TEXT | - | NULL | Nom |
+| `email` | TEXT | NOT NULL | - | Invitee email |
+| `first_name` | TEXT | - | NULL | First name |
+| `last_name` | TEXT | - | NULL | Last name |
 | `role` | TEXT | - | NULL | admin, manager |
-| `token` | TEXT | NOT NULL UNIQUE | - | Token d'invitation |
-| `expires_at` | TIMESTAMPTZ | - | now() + 7 days | Date d'expiration |
-| `accepted_at` | TIMESTAMPTZ | - | NULL | Date d'acceptation |
-| `created_at` | TIMESTAMPTZ | - | now() | Date de création |
-| `updated_at` | TIMESTAMPTZ | - | now() | Dernière mise à jour |
+| `token` | TEXT | NOT NULL UNIQUE | - | Invitation token |
+| `expires_at` | TIMESTAMPTZ | - | now() + 7 days | Expiration date |
+| `accepted_at` | TIMESTAMPTZ | - | NULL | Acceptance date |
+| `created_at` | TIMESTAMPTZ | - | now() | Creation date |
+| `updated_at` | TIMESTAMPTZ | - | now() | Last update |
 
-**Fonctions associées**:
-- `accept_manager_invitation(token, first_name, last_name, password)` - Acceptation invitation
-- `get_invitation_by_token(token)` - Récupération détails
+**Associated functions**:
+- `accept_manager_invitation(token, first_name, last_name, password)` - Accept invitation
+- `get_invitation_by_token(token)` - Get details
 
 ---
 
 ### Support & Audit
 
 #### `tickets`
-Système de support client
+Customer support system
 
-| Colonne | Type | Contraintes | Défaut | Description |
-|---------|------|-------------|--------|-------------|
-| `id` | UUID | PK | gen_random_uuid() | Identifiant unique |
+| Column | Type | Constraints | Default | Description |
+|--------|------|-------------|---------|-------------|
+| `id` | UUID | PK | gen_random_uuid() | Unique identifier |
 | `company_id` | UUID | FK NOT NULL | - | → companies(id) |
 | `user_id` | UUID | FK NOT NULL | - | → users(id) |
-| `subject` | TEXT | NOT NULL | - | Sujet du ticket |
+| `subject` | TEXT | NOT NULL | - | Ticket subject |
 | `status` | ENUM | - | 'open' | open, in_progress, resolved, closed |
 | `priority` | TEXT | - | 'normal' | low, normal, high, urgent |
-| `created_at` | TIMESTAMPTZ | - | now() | Date de création |
-| `updated_at` | TIMESTAMPTZ | - | now() | Dernière mise à jour |
+| `created_at` | TIMESTAMPTZ | - | now() | Creation date |
+| `updated_at` | TIMESTAMPTZ | - | now() | Last update |
 
 ---
 
 #### `ticket_messages`
-Messages des tickets
+Ticket messages
 
-| Colonne | Type | Contraintes | Défaut | Description |
-|---------|------|-------------|--------|-------------|
-| `id` | UUID | PK | gen_random_uuid() | Identifiant unique |
+| Column | Type | Constraints | Default | Description |
+|--------|------|-------------|---------|-------------|
+| `id` | UUID | PK | gen_random_uuid() | Unique identifier |
 | `ticket_id` | UUID | FK NOT NULL | - | → tickets(id) |
 | `user_id` | UUID | FK NOT NULL | - | → users(id) |
-| `message` | TEXT | NOT NULL | - | Contenu du message |
-| `is_internal` | BOOLEAN | - | false | Note interne |
-| `created_at` | TIMESTAMPTZ | - | now() | Date de création |
+| `message` | TEXT | NOT NULL | - | Message content |
+| `is_internal` | BOOLEAN | - | false | Internal note |
+| `created_at` | TIMESTAMPTZ | - | now() | Creation date |
 
 ---
 
 #### `audit_logs`
-Logs d'audit de sécurité et conformité
+Security and compliance audit logs
 
-| Colonne | Type | Contraintes | Défaut | Description |
-|---------|------|-------------|--------|-------------|
-| `id` | UUID | PK | gen_random_uuid() | Identifiant unique |
+| Column | Type | Constraints | Default | Description |
+|--------|------|-------------|---------|-------------|
+| `id` | UUID | PK | gen_random_uuid() | Unique identifier |
 | `user_id` | UUID | FK | NULL | → users(id) |
-| `user_email` | TEXT | - | NULL | Email de l'utilisateur |
-| `event_type` | TEXT | NOT NULL | - | Type d'événement |
-| `path` | TEXT | NOT NULL | - | Chemin API |
-| `method` | TEXT | - | NULL | Méthode HTTP |
-| `ip_address` | TEXT | NOT NULL | - | Adresse IP |
+| `user_email` | TEXT | - | NULL | User email |
+| `event_type` | TEXT | NOT NULL | - | Event type |
+| `path` | TEXT | NOT NULL | - | API path |
+| `method` | TEXT | - | NULL | HTTP method |
+| `ip_address` | TEXT | NOT NULL | - | IP address |
 | `user_agent` | TEXT | - | NULL | User agent |
-| `details` | JSONB | - | NULL | Détails additionnels |
-| `created_at` | TIMESTAMPTZ | NOT NULL | now() | Date de création |
+| `details` | JSONB | - | NULL | Additional details |
+| `created_at` | TIMESTAMPTZ | NOT NULL | now() | Creation date |
 
 **Indexes**:
-- Index sur (user_id, created_at)
-- Index sur (event_type, created_at)
+- Index on (user_id, created_at)
+- Index on (event_type, created_at)
 
-**Fonctions associées**:
-- `cleanup_old_audit_logs()` - Cron pour nettoyer logs anciens
+**Associated functions**:
+- `cleanup_old_audit_logs()` - Cron to clean old logs
 
 ---
 
 #### `otp_codes`
-Codes OTP pour authentification passwordless
+OTP codes for passwordless authentication
 
-| Colonne | Type | Contraintes | Défaut | Description |
-|---------|------|-------------|--------|-------------|
-| `id` | UUID | PK | gen_random_uuid() | Identifiant unique |
-| `email` | TEXT | NOT NULL | - | Email de l'utilisateur |
-| `code` | TEXT | NOT NULL | - | Code OTP |
-| `used` | BOOLEAN | - | false | Code utilisé |
-| `created_at` | TIMESTAMPTZ | NOT NULL | now() | Date de création |
-| `expires_at` | TIMESTAMPTZ | NOT NULL | now() + 60 min | Date d'expiration |
+| Column | Type | Constraints | Default | Description |
+|--------|------|-------------|---------|-------------|
+| `id` | UUID | PK | gen_random_uuid() | Unique identifier |
+| `email` | TEXT | NOT NULL | - | User email |
+| `code` | TEXT | NOT NULL | - | OTP code |
+| `used` | BOOLEAN | - | false | Code used |
+| `created_at` | TIMESTAMPTZ | NOT NULL | now() | Creation date |
+| `expires_at` | TIMESTAMPTZ | NOT NULL | now() + 60 min | Expiration date |
 
 **Indexes**:
-- Index sur (email, used, expires_at)
+- Index on (email, used, expires_at)
 
 **Expiration**: 60 minutes
 
 ---
 
 #### `employee_devices`
-Tokens de push notification
+Push notification tokens
 
-| Colonne | Type | Contraintes | Défaut | Description |
-|---------|------|-------------|--------|-------------|
-| `id` | UUID | PK | gen_random_uuid() | Identifiant unique |
+| Column | Type | Constraints | Default | Description |
+|--------|------|-------------|---------|-------------|
+| `id` | UUID | PK | gen_random_uuid() | Unique identifier |
 | `employee_id` | UUID | FK NOT NULL | - | → employees(id) |
-| `push_token` | TEXT | NOT NULL UNIQUE | - | Token Expo Push |
+| `push_token` | TEXT | NOT NULL UNIQUE | - | Expo Push token |
 | `platform` | TEXT | - | NULL | ios, android |
-| `created_at` | TIMESTAMPTZ | - | now() | Date de création |
-| `updated_at` | TIMESTAMPTZ | - | now() | Dernière mise à jour |
+| `created_at` | TIMESTAMPTZ | - | now() | Creation date |
+| `updated_at` | TIMESTAMPTZ | - | now() | Last update |
 
-**Contraintes**:
+**Constraints**:
 - UNIQUE(push_token)
 
 **Indexes**:
-- Index sur (employee_id)
+- Index on (employee_id)
 
 ---
 
 #### `admin_whitelist`
-Contrôle d'accès administrateur plateforme
+Platform administrator access control
 
-| Colonne | Type | Contraintes | Défaut | Description |
-|---------|------|-------------|--------|-------------|
-| `id` | UUID | PK | gen_random_uuid() | Identifiant unique |
-| `email` | TEXT | NOT NULL UNIQUE | - | Email admin |
-| `role` | TEXT | - | NULL | Rôle spécifique |
-| `is_active` | BOOLEAN | - | true | Actif |
-| `created_at` | TIMESTAMPTZ | - | now() | Date de création |
-| `updated_at` | TIMESTAMPTZ | - | now() | Dernière mise à jour |
+| Column | Type | Constraints | Default | Description |
+|--------|------|-------------|---------|-------------|
+| `id` | UUID | PK | gen_random_uuid() | Unique identifier |
+| `email` | TEXT | NOT NULL UNIQUE | - | Admin email |
+| `role` | TEXT | - | NULL | Specific role |
+| `is_active` | BOOLEAN | - | true | Active |
+| `created_at` | TIMESTAMPTZ | - | now() | Creation date |
+| `updated_at` | TIMESTAMPTZ | - | now() | Last update |
 
 ---
 
 #### `user_roles`
-Assignation de rôles utilisateurs
+User role assignment
 
-| Colonne | Type | Contraintes | Défaut | Description |
-|---------|------|-------------|--------|-------------|
+| Column | Type | Constraints | Default | Description |
+|--------|------|-------------|---------|-------------|
 | `user_id` | UUID | PK FK | - | → users(id) |
 | `company_id` | UUID | FK | NULL | → companies(id) |
 | `assigned_establishment_id` | UUID | FK | NULL | → establishments(id) |
 | `role` | TEXT | NOT NULL | - | admin, manager, employee |
-| `created_at` | TIMESTAMPTZ | - | now() | Date de création |
-| `updated_at` | TIMESTAMPTZ | - | now() | Dernière mise à jour |
+| `created_at` | TIMESTAMPTZ | - | now() | Creation date |
+| `updated_at` | TIMESTAMPTZ | - | now() | Last update |
 
 ---
 
 #### `user_permissions`
-Système de permissions granulaire
+Granular permissions system
 
-| Colonne | Type | Contraintes | Défaut | Description |
-|---------|------|-------------|--------|-------------|
-| `id` | UUID | PK | gen_random_uuid() | Identifiant unique |
+| Column | Type | Constraints | Default | Description |
+|--------|------|-------------|---------|-------------|
+| `id` | UUID | PK | gen_random_uuid() | Unique identifier |
 | `user_id` | UUID | FK NOT NULL | - | → users(id) |
 | `permission` | TEXT | NOT NULL | - | Permission |
-| `resource_type` | TEXT | - | NULL | Type de ressource |
-| `resource_id` | UUID | - | NULL | ID de la ressource |
-| `created_at` | TIMESTAMPTZ | - | now() | Date de création |
+| `resource_type` | TEXT | - | NULL | Resource type |
+| `resource_id` | UUID | - | NULL | Resource ID |
+| `created_at` | TIMESTAMPTZ | - | now() | Creation date |
 
 ---
 
-## ⚙️ Fonctions & Triggers
+## Functions & Triggers
 
-### Fonctions de Gamification
+### Gamification Functions
 
 #### `increment_user_points(user_id UUID, points INTEGER)`
-Ajoute des points à un utilisateur et vérifie le déblocage de badges
+Adds points to a user and checks for badge unlocks
 
 ```sql
 SELECT increment_user_points('user-uuid', 100);
 ```
 
-**Fonctionnalité**:
-- Incrémente total_points et weekly_points
-- Appelle automatiquement `check_and_unlock_badges()`
-- Met à jour updated_at
+**Functionality**:
+- Increments total_points and weekly_points
+- Automatically calls `check_and_unlock_badges()`
+- Updates updated_at
 
 ---
 
 #### `increment_user_stat(user_id UUID, stat_name TEXT, increment INTEGER)`
-Incrémente une statistique spécifique
+Increments a specific statistic
 
 ```sql
 SELECT increment_user_stat('user-uuid', 'responses_under_2min', 1);
 ```
 
-**Stats disponibles**: Toutes les colonnes INTEGER de user_stats
+**Available stats**: All INTEGER columns from user_stats
 
 ---
 
 #### `increment_challenge_progress(user_id UUID, challenge_id UUID, increment INTEGER, week_start DATE)`
-Incrémente la progression d'un défi hebdomadaire
+Increments weekly challenge progress
 
 ```sql
 SELECT increment_challenge_progress(
@@ -801,15 +801,15 @@ SELECT increment_challenge_progress(
 );
 ```
 
-**Fonctionnalité**:
-- Upsert sur user_weekly_progress
-- Marque automatiquement comme completed si target atteint
-- Safe pour appels multiples (idempotent)
+**Functionality**:
+- Upsert on user_weekly_progress
+- Automatically marks as completed if target reached
+- Safe for multiple calls (idempotent)
 
 ---
 
 #### `claim_challenge_reward(user_id UUID, challenge_id UUID, week_start DATE)`
-Réclame la récompense d'un défi complété (avec rate limiting)
+Claims a completed challenge reward (with rate limiting)
 
 ```sql
 SELECT claim_challenge_reward(
@@ -819,91 +819,91 @@ SELECT claim_challenge_reward(
 );
 ```
 
-**Retour**: JSON avec `success`, `points_awarded`, ou `error`
+**Return**: JSON with `success`, `points_awarded`, or `error`
 
-**Sécurité**:
-- Vérifie que le défi est completed
-- Vérifie que la récompense n'a pas déjà été claimed
-- Rate limiting pour éviter les doubles claims
+**Security**:
+- Verifies challenge is completed
+- Verifies reward hasn't already been claimed
+- Rate limiting to prevent double claims
 
-**Fixé dans**: Migration 20251012201326
+**Fixed in**: Migration 20251012201326
 
 ---
 
 #### `check_and_unlock_badges(user_id UUID)`
-Vérifie et débloque automatiquement les badges correspondant aux achievements
+Checks and automatically unlocks badges matching achievements
 
 ```sql
 SELECT check_and_unlock_badges('user-uuid');
 ```
 
-**Badges Auto-Unlock**:
-- Weekend Warrior (2 weekend shifts complétés)
-- Vitesse Éclair (3 réponses < 2min)
-- Autres badges basés sur unlock_requirement (JSONB)
+**Auto-Unlock Badges**:
+- Weekend Warrior (2 weekend shifts completed)
+- Lightning Speed (3 responses < 2min)
+- Other badges based on unlock_requirement (JSONB)
 
 ---
 
 #### `unlock_badge_for_user(user_id UUID, badge_id UUID)`
-Débloque manuellement un cosmétique
+Manually unlocks a cosmetic
 
 ```sql
 SELECT unlock_badge_for_user('user-uuid', 'badge-uuid');
 ```
 
-**Contraintes**:
-- Ignore si déjà débloqué (UNIQUE)
-- SECURITY DEFINER avec validation
+**Constraints**:
+- Ignores if already unlocked (UNIQUE)
+- SECURITY DEFINER with validation
 
 ---
 
 #### `add_xp_to_user(user_id UUID, amount INTEGER, reason TEXT)`
-Ajoute des XP avec tracking de la raison
+Adds XP with reason tracking
 
 ```sql
 SELECT add_xp_to_user('user-uuid', 50, 'Shift completed on time');
 ```
 
-**Retour**: JSON avec nouveau total
+**Return**: JSON with new total
 
 ---
 
-### Fonctions de Gestion
+### Management Functions
 
 #### `calculate_reliability_score(employee_id UUID)`
-Calcule le score de fiabilité (0.00-1.00)
+Calculates reliability score (0.00-1.00)
 
 ```sql
 SELECT calculate_reliability_score('employee-uuid');
 ```
 
-**Calcul**:
+**Calculation**:
 - Base: 1.00
-- -15% par no-show
-- -5% par cancellation
+- -15% per no-show
+- -5% per cancellation
 - Min: 0.00, Max: 1.00
 
 ---
 
 #### `recalculate_all_reliability_scores()`
-Recalcule tous les scores de fiabilité (batch)
+Recalculates all reliability scores (batch)
 
 ```sql
 SELECT recalculate_all_reliability_scores();
 ```
 
-**Usage**: Cron hebdomadaire ou admin manuel
+**Usage**: Weekly cron or manual admin
 
 ---
 
 #### `get_subscription_limits(plan TEXT)`
-Retourne les limites du plan d'abonnement
+Returns subscription plan limits
 
 ```sql
 SELECT get_subscription_limits('pro');
 ```
 
-**Retour**:
+**Return**:
 ```json
 {
   "max_establishments": 3,
@@ -915,25 +915,25 @@ SELECT get_subscription_limits('pro');
 ---
 
 #### `can_access_establishment(user_id UUID, establishment_id UUID)`
-Vérifie si un utilisateur peut accéder à un établissement
+Checks if a user can access an establishment
 
 ```sql
 SELECT can_access_establishment('user-uuid', 'establishment-uuid');
 ```
 
-**Retour**: BOOLEAN
+**Return**: BOOLEAN
 
-**Logique**:
-- Admin: tous les établissements de sa company
-- Manager: seulement son assigned_establishment_id
-- Employee: tous les établissements de sa company
+**Logic**:
+- Admin: all establishments of their company
+- Manager: only their assigned_establishment_id
+- Employee: all establishments of their company
 
 ---
 
-### Fonctions d'Authentification
+### Authentication Functions
 
 #### `signup_employer(email TEXT, password TEXT, company_name TEXT)`
-Inscription d'un nouvel employeur
+Registers a new employer
 
 ```sql
 SELECT signup_employer(
@@ -943,55 +943,55 @@ SELECT signup_employer(
 );
 ```
 
-**Retour**: JSON avec `user_id`, `company_id`
+**Return**: JSON with `user_id`, `company_id`
 
 **Actions**:
-1. Crée user dans auth.users
-2. Crée company
-3. Crée user_stats
-4. Assigne role 'admin'
+1. Creates user in auth.users
+2. Creates company
+3. Creates user_stats
+4. Assigns 'admin' role
 
 ---
 
 #### `complete_employer_signup(user_id UUID, company_name TEXT)`
-Finalise l'onboarding employeur
+Finalizes employer onboarding
 
 ```sql
 SELECT complete_employer_signup('user-uuid', 'My Company');
 ```
 
-**Usage**: Après vérification email
+**Usage**: After email verification
 
 ---
 
-### Fonctions d'Invitations
+### Invitation Functions
 
 #### `generate_invitation_token()`
-Génère un token unique pour invitation
+Generates a unique invitation token
 
 ```sql
 SELECT generate_invitation_token();
 ```
 
-**Retour**: TEXT (32 caractères alphanumériques)
+**Return**: TEXT (32 alphanumeric characters)
 
 ---
 
 #### `validate_invitation_token_readonly(token TEXT)`
-Valide un token sans side effects
+Validates a token without side effects
 
 ```sql
 SELECT validate_invitation_token_readonly('abc123xyz');
 ```
 
-**Retour**: JSON avec détails de l'invitation ou error
+**Return**: JSON with invitation details or error
 
-**Usage**: Affichage page d'invitation
+**Usage**: Invitation page display
 
 ---
 
 #### `validate_invitation_token(token TEXT, user_id UUID, employee_id UUID, ip_address INET, user_agent TEXT)`
-Validation complète avec tracking
+Full validation with tracking
 
 ```sql
 SELECT validate_invitation_token(
@@ -1004,15 +1004,15 @@ SELECT validate_invitation_token(
 ```
 
 **Actions**:
-1. Valide token (exists, active, not expired, max_uses)
-2. Crée entry dans establishment_invitation_signups
-3. Incrémente current_uses
-4. Met à jour last_used_at
+1. Validates token (exists, active, not expired, max_uses)
+2. Creates entry in establishment_invitation_signups
+3. Increments current_uses
+4. Updates last_used_at
 
 ---
 
 #### `accept_manager_invitation(token TEXT, first_name TEXT, last_name TEXT, password TEXT)`
-Accepte une invitation manager
+Accepts a manager invitation
 
 ```sql
 SELECT accept_manager_invitation(
@@ -1023,22 +1023,22 @@ SELECT accept_manager_invitation(
 );
 ```
 
-**Retour**: JSON avec `user_id`, `company_id`, `establishment_id`
+**Return**: JSON with `user_id`, `company_id`, `establishment_id`
 
 ---
 
-### Fonctions de Maintenance
+### Maintenance Functions
 
 #### `auto_complete_shifts()`
-Marque les shifts passés comme completed
+Marks past shifts as completed
 
 ```sql
 SELECT auto_complete_shifts();
 ```
 
-**Cron**: Quotidien à 01:00 UTC
+**Cron**: Daily at 01:00 UTC
 
-**Logique**:
+**Logic**:
 - end_time < NOW()
 - status = 'filled'
 - → status = 'completed'
@@ -1046,15 +1046,15 @@ SELECT auto_complete_shifts();
 ---
 
 #### `expire_old_shifts()`
-Expire les shifts non remplis anciens
+Expires old unfilled shifts
 
 ```sql
 SELECT expire_old_shifts();
 ```
 
-**Cron**: Quotidien à 02:00 UTC
+**Cron**: Daily at 02:00 UTC
 
-**Logique**:
+**Logic**:
 - start_time < NOW() - 24h
 - status IN ('pending', 'partially_filled')
 - → status = 'expired'
@@ -1062,15 +1062,15 @@ SELECT expire_old_shifts();
 ---
 
 #### `cleanup_old_audit_logs()`
-Nettoie les logs d'audit anciens
+Cleans up old audit logs
 
 ```sql
 SELECT cleanup_old_audit_logs();
 ```
 
-**Cron**: Quotidien à 03:00 UTC
+**Cron**: Daily at 03:00 UTC
 
-**Logique**: DELETE logs > 90 jours
+**Logic**: DELETE logs > 90 days
 
 ---
 
@@ -1078,48 +1078,48 @@ SELECT cleanup_old_audit_logs();
 
 #### `initialize_user_stats()`
 **Event**: AFTER INSERT ON users
-**Action**: Crée automatiquement user_stats avec valeurs par défaut
+**Action**: Automatically creates user_stats with default values
 
 ---
 
 #### `trigger_notify_new_shift()`
 **Event**: AFTER INSERT ON shift_applications
-**Action**: Envoie push notification au manager (Migration 20251013000000)
+**Action**: Sends push notification to manager (Migration 20251013000000)
 
 ---
 
 #### `check_establishment_limit()`
 **Event**: BEFORE INSERT ON establishments
-**Action**: Valide que la company n'excède pas son plan limit
+**Action**: Validates that company doesn't exceed plan limit
 
 ---
 
 #### `check_shift_limit()`
 **Event**: BEFORE INSERT ON shifts
-**Action**: Valide que la company n'excède pas le max_shifts_active (Free: 1)
+**Action**: Validates that company doesn't exceed max_shifts_active (Free: 1)
 
 ---
 
-## 🔐 Row Level Security (RLS)
+## Row Level Security (RLS)
 
-### Principe
+### Principle
 
-Chaque table utilise RLS pour isoler les données par `company_id` et `role`.
+Each table uses RLS to isolate data by `company_id` and `role`.
 
-### Rôles
+### Roles
 
-| Rôle | Description | Accès |
-|------|-------------|-------|
-| `employee` | Employé standard | Ses propres données + shifts de sa company |
-| `manager` | Manager d'établissement | Données de son establishment |
-| `admin` | Admin entreprise | Toutes les données de sa company |
-| `superadmin` | Super admin plateforme | Accès global (debug uniquement) |
+| Role | Description | Access |
+|------|-------------|--------|
+| `employee` | Standard employee | Own data + company shifts |
+| `manager` | Establishment manager | Establishment data |
+| `admin` | Company admin | All company data |
+| `superadmin` | Platform super admin | Global access (debug only) |
 
-### Policies Critiques
+### Critical Policies
 
 #### `companies`
 ```sql
--- Admins voient leur company
+-- Admins see their company
 CREATE POLICY "Admins can view own company"
 ON companies FOR SELECT
 TO authenticated
@@ -1133,7 +1133,7 @@ USING (
 
 #### `establishments`
 ```sql
--- Managers voient leur establishment
+-- Managers see their establishment
 CREATE POLICY "Managers can view own establishment"
 ON establishments FOR SELECT
 TO authenticated
@@ -1150,7 +1150,7 @@ USING (
 
 #### `shifts`
 ```sql
--- Employees voient shifts de leur company
+-- Employees see company shifts
 CREATE POLICY "Employees can view shifts"
 ON shifts FOR SELECT
 TO authenticated
@@ -1158,7 +1158,7 @@ USING (
   company_id = (SELECT company_id FROM users WHERE id = auth.uid())
 );
 
--- Managers créent shifts de leur establishment
+-- Managers create shifts for their establishment
 CREATE POLICY "Managers can create shifts"
 ON shifts FOR INSERT
 TO authenticated
@@ -1175,13 +1175,13 @@ WITH CHECK (
 
 #### `shift_applications`
 ```sql
--- Users voient leurs propres candidatures
+-- Users see their own applications
 CREATE POLICY "users_select_own_applications"
 ON shift_applications FOR SELECT
 TO authenticated
 USING (user_id = auth.uid());
 
--- Employers voient candidatures de leur company
+-- Employers see their company applications
 CREATE POLICY "employers_view_company_applications"
 ON shift_applications FOR SELECT
 TO authenticated
@@ -1194,19 +1194,19 @@ USING (
 );
 ```
 
-**Fixé dans**: Migration 20251012192924 (résolution récursivité infinie)
+**Fixed in**: Migration 20251012192924 (infinite recursion resolution)
 
 ---
 
 #### `user_stats`
 ```sql
--- Users voient leurs propres stats
+-- Users see their own stats
 CREATE POLICY "Users can view own stats"
 ON user_stats FOR SELECT
 TO authenticated
 USING (user_id = auth.uid());
 
--- Admins voient stats de leur company
+-- Admins see their company stats
 CREATE POLICY "Admins can view company stats"
 ON user_stats FOR SELECT
 TO authenticated
@@ -1219,16 +1219,16 @@ USING (
 );
 ```
 
-**Note**: Leaderboard utilise une vue matérialisée sans RLS strict (anonymisé)
+**Note**: Leaderboard uses a materialized view without strict RLS (anonymized)
 
 ---
 
-## 🚀 Indexes & Performance
+## Indexes & Performance
 
-### Indexes Critiques
+### Critical Indexes
 
 ```sql
--- Applications (recherche rapide)
+-- Applications (fast search)
 CREATE INDEX idx_applications_shift_user
   ON shift_applications(shift_id, user_id);
 
@@ -1246,7 +1246,7 @@ CREATE INDEX idx_user_stats_weekly_points
 CREATE INDEX idx_user_stats_total_points
   ON user_stats(total_points DESC);
 
--- Shifts (filtres fréquents)
+-- Shifts (frequent filters)
 CREATE INDEX idx_shifts_company_status
   ON shifts(company_id, status);
 
@@ -1257,25 +1257,25 @@ CREATE INDEX idx_shifts_start_time
   ON shifts(start_time)
   WHERE status IN ('open', 'partially_filled');
 
--- User Cosmetics (inventaire)
+-- User Cosmetics (inventory)
 CREATE INDEX idx_user_cosmetics_user
   ON user_cosmetics(user_id);
 
--- Weekly Progress (défis)
+-- Weekly Progress (challenges)
 CREATE INDEX idx_user_progress_user_week
   ON user_weekly_progress(user_id, week_start_date);
 ```
 
-### Optimisations
+### Optimizations
 
-- **Connection Pooling**: Supabase Pooler (mode transaction)
-- **Caching**: Redis pour leaderboard (TTL: 5min)
-- **Partitioning**: audit_logs par mois (si > 10M lignes)
-- **Materialized Views**: Leaderboard pré-calculé (refresh 5min)
+- **Connection Pooling**: Supabase Pooler (transaction mode)
+- **Caching**: Redis for leaderboard (TTL: 5min)
+- **Partitioning**: audit_logs by month (if > 10M rows)
+- **Materialized Views**: Pre-calculated leaderboard (refresh 5min)
 
 ---
 
-## 📦 Enums
+## Enums
 
 ### `application_status`
 ```sql
@@ -1319,15 +1319,15 @@ CREATE INDEX idx_user_progress_user_week
 
 ---
 
-## 🔄 Migrations
+## Migrations
 
 ### Structure
 
-Les migrations sont dans `supabase/migrations/`:
+Migrations are in `supabase/migrations/`:
 
 ```
 supabase/migrations/
-├── 20251012000001_prod_dump_complete.sql      # Dump initial prod
+├── 20251012000001_prod_dump_complete.sql      # Initial prod dump
 ├── 20251012192924_fix_rls_recursion.sql       # Fix RLS shift_applications
 ├── 20251012201326_fix_claim_challenge.sql     # Fix claim_challenge_reward
 ├── 20251012210249_subscription_data_fix.sql   # Subscription data
@@ -1335,49 +1335,49 @@ supabase/migrations/
 └── ...
 ```
 
-### Commandes
+### Commands
 
 ```bash
-# Créer nouvelle migration
+# Create new migration
 npx supabase migration new <name>
 
-# Appliquer migrations local
+# Apply migrations locally
 npx supabase db reset
 
-# Appliquer migrations prod
+# Apply migrations to prod
 npx supabase db push
 
-# Créer migration depuis diff
+# Create migration from diff
 npx supabase db diff -f <name>
 
-# Lister migrations
+# List migrations
 npx supabase migration list
 ```
 
-### Migrations Critiques
+### Critical Migrations
 
 #### `20251012192924_fix_rls_recursion.sql`
-**Problème**: Récursivité infinie dans RLS policies de shift_applications
-**Solution**: Réécriture des policies pour éviter les boucles
+**Problem**: Infinite recursion in shift_applications RLS policies
+**Solution**: Rewrite policies to avoid loops
 
 #### `20251012201326_fix_claim_challenge.sql`
-**Problème**: claim_challenge_reward utilisait employee_challenges au lieu de user_weekly_progress
-**Solution**: Migration vers nouveau système weekly_challenges
+**Problem**: claim_challenge_reward used employee_challenges instead of user_weekly_progress
+**Solution**: Migration to new weekly_challenges system
 
 #### `20251013000000_add_notification_trigger.sql`
-**Ajout**: Trigger pour envoyer push notification sur nouvelle application
+**Addition**: Trigger to send push notification on new application
 
 ---
 
-## 📊 Métriques & Monitoring
+## Metrics & Monitoring
 
-### Requêtes Lentes (> 100ms)
+### Slow Queries (> 100ms)
 
 ```sql
--- Activer pg_stat_statements
+-- Enable pg_stat_statements
 CREATE EXTENSION IF NOT EXISTS pg_stat_statements;
 
--- Top 10 requêtes lentes
+-- Top 10 slow queries
 SELECT
   query,
   calls,
@@ -1388,7 +1388,7 @@ ORDER BY mean_exec_time DESC
 LIMIT 10;
 ```
 
-### Taille des Tables
+### Table Sizes
 
 ```sql
 SELECT
@@ -1400,10 +1400,10 @@ WHERE schemaname = 'public'
 ORDER BY pg_total_relation_size(schemaname||'.'||tablename) DESC;
 ```
 
-### Audit RLS
+### RLS Audit
 
 ```sql
--- Vérifier que toutes les tables ont RLS activé
+-- Verify all tables have RLS enabled
 SELECT
   tablename,
   rowsecurity AS rls_enabled
@@ -1415,23 +1415,23 @@ WHERE schemaname = 'public'
 
 ---
 
-## 🔒 Sécurité Base de Données
+## Database Security
 
 ### Checklist
 
-- ✅ RLS activé sur toutes les tables
-- ✅ Policies testées par rôle
-- ✅ Service Role Key jamais exposée côté client
-- ✅ Fonctions SECURITY DEFINER avec validation stricte
-- ✅ Indexes sur colonnes filtrées (performance)
-- ✅ Contraintes CHECK sur données critiques
-- ✅ Cascade DELETE protégé (soft delete préféré)
-- ✅ Audit logs pour actions critiques
+- ✅ RLS enabled on all tables
+- ✅ Policies tested by role
+- ✅ Service Role Key never exposed client-side
+- ✅ SECURITY DEFINER functions with strict validation
+- ✅ Indexes on filtered columns (performance)
+- ✅ CHECK constraints on critical data
+- ✅ Protected cascade DELETE (soft delete preferred)
+- ✅ Audit logs for critical actions
 
-### Tests RLS
+### RLS Tests
 
 ```sql
--- Test isolation multi-tenant
+-- Test multi-tenant isolation
 SET LOCAL ROLE authenticated;
 SET LOCAL request.jwt.claim.sub TO '<employee_user_id>';
 
@@ -1442,15 +1442,15 @@ WHERE company_id != (SELECT company_id FROM users WHERE id = auth.uid());
 
 ---
 
-## 📚 Ressources
+## Resources
 
 - [Supabase Database Docs](https://supabase.com/docs/guides/database)
 - [PostgreSQL 15 Docs](https://www.postgresql.org/docs/15/)
 - [Row Level Security Guide](https://supabase.com/docs/guides/auth/row-level-security)
-- [Types Auto-Generated](../types/database.types.ts)
+- [Auto-Generated Types](../types/database.types.ts)
 
 ---
 
 **Version**: 2.0.0
-**Dernière mise à jour**: 2025-10-17
-**Prochaine review**: Mensuelle
+**Last updated**: 2025-10-17
+**Next review**: Monthly
