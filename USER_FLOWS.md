@@ -1,41 +1,41 @@
-# 🔄 Flows Métier - Shift Express
+# Business Flows - Shift Express
 
-## 📋 Cycle de Vie d'un Shift
+## Shift Lifecycle
 
 ```mermaid
 stateDiagram-v2
-    [*] --> Pending: Manager crée shift
+    [*] --> Pending: Manager creates shift
 
-    Pending --> Published: Manager publie
-    Published --> Filled: Assez de candidatures acceptées
-    Published --> Expired: Date de début passée
+    Pending --> Published: Manager publishes
+    Published --> Filled: Enough applications accepted
+    Published --> Expired: Start date passed
 
-    Filled --> Completed: Shift terminé avec succès
-    Filled --> Cancelled: Manager annule
+    Filled --> Completed: Shift finished successfully
+    Filled --> Cancelled: Manager cancels
 
     Expired --> [*]
     Completed --> [*]
     Cancelled --> [*]
 
     note right of Published
-        Visible par les employés
-        Peut recevoir candidatures
+        Visible to employees
+        Can receive applications
     end note
 
     note right of Filled
         required_employees = filled_employees
-        Plus de candidatures acceptées
+        No more applications accepted
     end note
 
     note right of Completed
-        Trigger gamification :
-        - Points accordés
-        - Défis vérifiés
-        - Stats mises à jour
+        Gamification trigger:
+        - Points awarded
+        - Challenges verified
+        - Stats updated
     end note
 ```
 
-## 🙋 Flow de Candidature à un Shift
+## Shift Application Flow
 
 ```mermaid
 sequenceDiagram
@@ -46,76 +46,76 @@ sequenceDiagram
     participant G as Gamification
     actor R as Manager
 
-    E->>M: Voir shifts disponibles
+    E->>M: View available shifts
     M->>S: SELECT shifts WHERE status='published'
-    S-->>M: Liste shifts
+    S-->>M: Shifts list
 
-    E->>M: Postuler à un shift
+    E->>M: Apply to a shift
     M->>S: INSERT shift_application
-    Note over S: Calcul response_time_seconds
-    S-->>M: Application créée
+    Note over S: Calculate response_time_seconds
+    S-->>M: Application created
 
-    S->>N: Notifier manager
-    N->>R: 📱 "Nouvelle candidature"
+    S->>N: Notify manager
+    N->>R: "New application"
 
-    R->>M: Examiner candidature
-    R->>M: Accepter
+    R->>M: Review application
+    R->>M: Accept
     M->>S: UPDATE application status='accepted'
 
-    Note over S: Vérifier si shift rempli
-    alt Shift rempli
+    Note over S: Check if shift filled
+    alt Shift filled
         S->>S: UPDATE shift status='filled'
     end
 
-    S->>N: Notifier employee
-    N->>E: 📱 "Candidature acceptée"
+    S->>N: Notify employee
+    N->>E: "Application accepted"
 
-    Note over E,G: Après le shift
+    Note over E,G: After the shift
     S->>G: Shift completed
-    G->>G: Accorder points
-    G->>G: Vérifier défis
-    G->>G: Débloquer badges
-    G->>E: 🏆 "Badge débloqué!"
+    G->>G: Award points
+    G->>G: Verify challenges
+    G->>G: Unlock badges
+    G->>E: "Badge unlocked!"
 ```
 
-## 🎮 Système de Gamification
+## Gamification System
 
 ```mermaid
 flowchart TD
-    START[Employee complète shift] --> UPDATE_STATS[Mettre à jour user_stats]
+    START[Employee completes shift] --> UPDATE_STATS[Update user_stats]
 
-    UPDATE_STATS --> POINTS{Calculer points}
-    POINTS --> ADD_BASE[+100 points base]
-    POINTS --> ADD_BONUS{Bonus ?}
+    UPDATE_STATS --> POINTS{Calculate points}
+    POINTS --> ADD_BASE[+100 base points]
+    POINTS --> ADD_BONUS{Bonus?}
 
-    ADD_BONUS -->|Réponse < 2min| FAST[+50 points]
+    ADD_BONUS -->|Response < 2min| FAST[+50 points]
     ADD_BONUS -->|Weekend| WEEKEND[+30 points]
-    ADD_BONUS -->|Nuit| NIGHT[+20 points]
+    ADD_BONUS -->|Night| NIGHT[+20 points]
 
     FAST & WEEKEND & NIGHT --> TOTAL[Total points]
     ADD_BASE --> TOTAL
 
-    TOTAL --> CHECK_CHALLENGES[Vérifier défis hebdo]
-    CHECK_CHALLENGES --> UPDATE_PROGRESS[Incrémenter progress]
+    TOTAL --> CHECK_CHALLENGES[Check weekly challenges]
+    CHECK_CHALLENGES --> UPDATE_PROGRESS[Increment progress]
 
-    UPDATE_PROGRESS --> CHALLENGE_COMPLETE{Défi complété ?}
-    CHALLENGE_COMPLETE -->|Oui| REWARD_POINTS[+Points récompense]
-    CHALLENGE_COMPLETE -->|Non| NEXT
+    UPDATE_PROGRESS --> CHALLENGE_COMPLETE{Challenge completed?}
+    CHALLENGE_COMPLETE -->|Yes| REWARD_POINTS[+Reward points]
+    CHALLENGE_COMPLETE -->|No| NEXT
 
-    REWARD_POINTS --> CHECK_BADGES[Vérifier badges]
-    CHECK_BADGES --> UNLOCK_BADGE{Critère atteint ?}
+    REWARD_POINTS --> CHECK_BADGES[Check badges]
+    CHECK_BADGES --> UNLOCK_BADGE{Criteria met?}
 
-    UNLOCK_BADGE -->|Oui| ADD_COSMETIC[Ajouter à user_cosmetics]
-    UNLOCK_BADGE -->|Non| NEXT
+    UNLOCK_BADGE -->|Yes| ADD_COSMETIC[Add to user_cosmetics]
+    UNLOCK_BADGE -->|No| NEXT
 
-    ADD_COSMETIC --> NOTIFY_UNLOCK[📱 Notif badge débloqué]
-    NOTIFY_UNLOCK --> NEXT[Vérifier niveau]
+    ADD_COSMETIC --> NOTIFY_UNLOCK[Badge unlock notification]
+    NOTIFY_UNLOCK --> NEXT[Check level]
 
-    NEXT --> LEVEL_UP{Assez points ?}
-    LEVEL_UP -->|Oui| INCREMENT_LEVEL[Niveau +1]
-    LEVEL_UP -->|Non| END
+    NEXT --> LEVEL_UP{Enough points?}
+    LEVEL_UP -->|Yes| INCREMENT_LEVEL[Level +1]
+    LEVEL_UP -->|No| END
 
-    INCREMENT_LEVEL --> END[✅ Gamification terminée]
+    INCREMENT_LEVEL --> END[Gamification complete]
 
     style START fill:#90EE90
     style END fill:#FFD700
@@ -123,7 +123,7 @@ flowchart TD
     style NOTIFY_UNLOCK fill:#FF69B4
 ```
 
-## 📧 Flow d'Invitation Employé
+## Employee Invitation Flow
 
 ```mermaid
 sequenceDiagram
@@ -133,63 +133,63 @@ sequenceDiagram
     participant E as Email Service
     actor N as New Employee
 
-    M->>W: Inviter employé
+    M->>W: Invite employee
     W->>S: INSERT team_invitation
-    Note over S: Générer token unique
-    S-->>W: Invitation créée
+    Note over S: Generate unique token
+    S-->>W: Invitation created
 
     S->>E: Trigger email
-    E->>N: 📧 "Vous êtes invité!"
-    Note over E,N: Lien: /accept-invite?token=xxx
+    E->>N: "You're invited!"
+    Note over E,N: Link: /accept-invite?token=xxx
 
-    N->>W: Cliquer lien
+    N->>W: Click link
     W->>S: SELECT invitation WHERE token=xxx
-    S-->>W: Invitation valide
+    S-->>W: Valid invitation
 
-    N->>W: Créer compte
+    N->>W: Create account
     W->>S: auth.signUp()
-    S-->>W: User créé
+    S-->>W: User created
 
     W->>S: INSERT INTO users
     W->>S: INSERT INTO employees
     W->>S: UPDATE invitation accepted_at=NOW()
 
-    S->>S: Trigger initialisation gamification
-    Note over S: Créer user_stats<br/>Débloquer cosmétiques de départ
+    S->>S: Trigger gamification initialization
+    Note over S: Create user_stats<br/>Unlock starter cosmetics
 
-    S-->>N: ✅ Compte créé et prêt
+    S-->>N: Account created and ready
 ```
 
-## 🔔 Système de Notifications
+## Notification System
 
 ```mermaid
 flowchart LR
     subgraph "Triggers"
-        T1[Nouvelle candidature]
-        T2[Candidature acceptée]
-        T3[Shift annulé]
-        T4[Badge débloqué]
-        T5[Défi complété]
-        T6[Invitation reçue]
+        T1[New application]
+        T2[Application accepted]
+        T3[Shift cancelled]
+        T4[Badge unlocked]
+        T5[Challenge completed]
+        T6[Invitation received]
     end
 
     subgraph "Notification Engine"
-        CHECK{User a device?}
+        CHECK{User has device?}
     end
 
     subgraph "Channels"
         PUSH[Push Notification<br/>Expo]
         EMAIL[Email<br/>Resend]
-        IN_APP[In-App<br/>Badge rouge]
+        IN_APP[In-App<br/>Red badge]
     end
 
     T1 & T2 & T3 & T4 & T5 & T6 --> CHECK
 
-    CHECK -->|Oui| PUSH
+    CHECK -->|Yes| PUSH
     CHECK --> EMAIL
     CHECK --> IN_APP
 
-    PUSH --> USER[📱 User]
+    PUSH --> USER[User]
     EMAIL --> USER
     IN_APP --> USER
 
@@ -198,7 +198,7 @@ flowchart LR
     style PUSH fill:#90EE90
 ```
 
-## 💳 Flow de Souscription (Stripe)
+## Subscription Flow (Stripe)
 
 ```mermaid
 sequenceDiagram
@@ -208,43 +208,43 @@ sequenceDiagram
     participant ST as Stripe
     participant S as Supabase
 
-    A->>W: Choisir plan (Pro/Enterprise)
+    A->>W: Choose plan (Pro/Enterprise)
     W->>API: POST /create-subscription
 
-    API->>ST: Créer Customer
+    API->>ST: Create Customer
     ST-->>API: customer_id
 
     API->>S: UPDATE companies SET stripe_customer_id
 
-    API->>ST: Créer Checkout Session
+    API->>ST: Create Checkout Session
     ST-->>API: session_url
     API-->>W: Redirect URL
 
-    W->>ST: Redirection Stripe Checkout
-    A->>ST: Paiement carte
+    W->>ST: Redirect to Stripe Checkout
+    A->>ST: Card payment
 
     ST->>API: Webhook: checkout.session.completed
     API->>S: UPDATE subscription_status='active'
     API->>S: UPDATE subscription_plan='professional'
 
-    ST->>API: Webhook: invoice.paid (mensuel)
-    API->>S: Enregistrer paiement
+    ST->>API: Webhook: invoice.paid (monthly)
+    API->>S: Record payment
 
-    alt Paiement échoué
+    alt Payment failed
         ST->>API: Webhook: invoice.payment_failed
         API->>S: UPDATE subscription_status='past_due'
-        API->>A: 📧 Email relance paiement
+        API->>A: Payment reminder email
     end
 ```
 
-## 🔄 Reset Hebdomadaire des Défis
+## Weekly Challenge Reset
 
 ```mermaid
 flowchart TD
-    CRON[Cron Job<br/>Chaque lundi 00:00] --> GET_WEEK[Calculer week_start_date]
+    CRON[Cron Job<br/>Every Monday 00:00] --> GET_WEEK[Calculate week_start_date]
 
-    GET_WEEK --> RESET_STATS[Reset stats hebdo]
-    RESET_STATS --> RESET_WEEKLY{Pour chaque user}
+    GET_WEEK --> RESET_STATS[Reset weekly stats]
+    RESET_STATS --> RESET_WEEKLY{For each user}
 
     RESET_WEEKLY --> R1[weekly_points = 0]
     RESET_WEEKLY --> R2[responses_under_2min = 0]
@@ -253,15 +253,15 @@ flowchart TD
 
     R1 & R2 & R3 & R4 --> UPDATE_PROGRESS[Reset user_weekly_progress]
 
-    UPDATE_PROGRESS --> NEW_WEEK{Pour chaque challenge actif}
+    UPDATE_PROGRESS --> NEW_WEEK{For each active challenge}
     NEW_WEEK --> INSERT[INSERT new progress row]
-    INSERT --> DONE[✅ Nouvelle semaine prête]
+    INSERT --> DONE[New week ready]
 
     style CRON fill:#FFD700
     style DONE fill:#90EE90
 ```
 
-## 🚨 Gestion No-Show
+## No-Show Management
 
 ```mermaid
 sequenceDiagram
@@ -271,28 +271,28 @@ sequenceDiagram
     participant G as Gamification
     actor E as Employee
 
-    Note over M: Shift terminé,<br/>Employee absent
+    Note over M: Shift ended,<br/>Employee absent
 
-    M->>W: Signaler no-show
+    M->>W: Report no-show
     W->>S: UPDATE shift_application<br/>SET no_show=true
 
-    S->>G: Trigger pénalité
+    S->>G: Trigger penalty
 
-    G->>S: Retirer points (-50)
-    G->>S: Incrémenter total_shifts_cancelled
+    G->>S: Remove points (-50)
+    G->>S: Increment total_shifts_cancelled
     G->>S: Reset no_cancellation_streak = 0
-    G->>S: Baisser reliability_score
+    G->>S: Lower reliability_score
 
-    Note over G: Si trop de no-shows:<br/>Suspendre compte
+    Note over G: If too many no-shows:<br/>Suspend account
 
-    G->>E: 📧 "Attention no-show"
+    G->>E: "No-show warning"
 
-    alt 3 no-shows en 1 mois
+    alt 3 no-shows in 1 month
         S->>S: UPDATE employees<br/>SET active=false
-        G->>E: 📧 "Compte suspendu"
+        G->>E: "Account suspended"
     end
 ```
 
 ---
 
-**Note :** Ces diagrammes sont en Mermaid et s'affichent automatiquement sur GitHub !
+**Note:** These diagrams are in Mermaid format and render automatically on GitHub!
